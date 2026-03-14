@@ -1,0 +1,471 @@
+i Want there roles only that will be mapped for user liek Admin, Trainer, Learner
+
+For Admin Login Users--> navigation bar of user Management of Actions i want edit the user data like user role, Status like that, and the create user icon of Create New User
+Add a new user to the platform and set their role --> Temporary Password input field end i want eye icon to see the entered password same for Login(Signin), SignUp(createuser) of Login page also, for courses page is ok, but why the lesson of video url will be mapped means when click the leasson means not open and video too, and one more thing in inside the leasson only i will create the quiz and map the quiz to that lesson, quiz is for lesson only not map with course.. Enrollment page of everything is good, and Categories page too..
+
+For Trainer --> All same dashboard flow but the data will be diff like that the trainer what course will mapped that the data only show same for all the navigation of all pages
+
+For Learner --> Dashboard overview will be diff like respectively data and navigation bar off data too and..
+
+Quiz is one Db collection 
+
+For any ref re visit the below Data
+
+change the backend code flow and delete the all FE code i will do it after the FE code
+
+Since idhu mini project, simple architecture use pannalam:
+
+React Frontend
+       ↓
+Spring Boot API
+       ↓
+MongoDB
+
+Video:
+
+YouTube URL mapping
+
+2. User Roles
+
+Role collection:
+
+ADMIN
+TRAINER
+LEARNER
+
+Responsibilities:
+
+ADMIN
+
+manage users
+
+create trainer
+
+create course
+
+dashboard metrics
+
+view reports
+
+TRAINER
+
+create course
+
+add module
+
+add lesson
+
+create quiz
+
+track student progress
+
+LEARNER
+
+enroll course
+
+watch lesson
+
+attempt quiz
+
+view progress
+
+download certificate
+
+3. MongoDB Collections (Final)
+
+Production LMS ku mostly ivlo collections irukkum.
+
+users
+roles
+courses
+modules
+lessons
+quizzes
+quizAttempts
+enrollments
+attendance
+certificates
+courseRatings
+discussions
+passwordResetTokens
+emailVerificationTokens
+leaderboard
+
+4.  User Collection
+users
+
+Example:
+
+{
+ "_id":"user123",
+ "username":"karthik",
+ "firstName":"Karthik",
+ "lastName":"P",
+ "email":"karthik@gmail.com",
+ "password":"bcryptHash",
+ "roleId":"ROLE_LEARNER",
+ "isActive":true,
+ "isDeleted":false,
+ "createdAt":"2026-03-11",
+ "updatedAt":"2026-03-11",
+ "createdBy":"SYSTEM",
+ "updatedBy":"SYSTEM"
+}
+
+5. Role Collection
+roles
+
+Example:
+
+{
+ "_id":"ROLE_ADMIN",
+ "name":"ADMIN"
+}
+
+Startup la preload panna.
+
+Example:
+
+@PostConstruct
+initRoles()
+
+Logic:
+
+if role exists
+   update updatedAt
+else
+   insert role
+
+
+6. Course Collection
+courses
+
+Example:
+
+{
+ "_id":"course1",
+ "title":"Java Developer",
+ "description":"Full Java course",
+ "trainerId":"userTrainer123",
+ "thumbnail":"course-thumbnail.png",
+ "price":0,
+ "modulesCount":10,
+ "isPublished":true
+}
+7. Module Collection
+
+Course → modules.
+
+modules
+
+Example:
+
+{
+ "_id":"module1",
+ "courseId":"course1",
+ "title":"Java Fundamentals",
+ "description":"Basic Java concepts",
+ "order":1
+}
+8. Lesson Collection
+
+Module → lessons.
+
+Example:
+
+{
+ "_id":"lesson1",
+ "moduleId":"module1",
+ "title":"Java Overview",
+ "description":"Introduction to Java",
+ "videoUrl":"https://youtube.com/xxxx",
+ "thumbnail":"lesson-thumb.png",
+ "duration":600,
+ "order":1
+}
+
+Example course structure:
+
+Java Developer Course
+        ↓
+Module 1 : Java Fundamentals
+        ↓
+Lesson 1 : Java Overview
+Lesson 2 : If Condition
+Lesson 3 : Loops
+
+Exactly nee sonna flow.
+
+9. Quiz Collection
+
+Each lesson ku quiz.
+
+quizzes
+
+Example:
+
+{
+ "_id":"quiz1",
+ "lessonId":"lesson1",
+ "questions":[
+  {
+    "question":"Java is?",
+    "options":["Language","Database","OS","IDE"],
+    "answer":"Language"
+  }
+ ]
+}
+10. Quiz Attempt
+
+Track attempts.
+
+quizAttempts
+
+Example:
+
+{
+ "_id":"attempt1",
+ "userId":"user123",
+ "quizId":"quiz1",
+ "score":80,
+ "attemptNumber":2
+}
+11. Enrollment
+
+User enroll course.
+
+enrollments
+
+Example:
+
+{
+ "_id":"enroll1",
+ "userId":"user123",
+ "courseId":"course1",
+ "progress":45,
+ "enrolledAt":"2026-03-11"
+}
+12. Attendance
+
+Track lesson watch.
+
+attendance
+
+Example:
+
+{
+ "_id":"attendance1",
+ "userId":"user123",
+ "lessonId":"lesson1",
+ "courseId":"course1",
+ "status":"COMPLETED"
+}
+13. Certificate
+
+Course complete pannina.
+
+certificates
+
+Example:
+
+{
+ "_id":"cert1",
+ "userId":"user123",
+ "courseId":"course1",
+ "issuedDate":"2026-03-11",
+ "certificateUrl":"blobUrl"
+}
+14. Course Rating
+
+Learner rating.
+
+courseRatings
+
+Example:
+
+{
+ "courseId":"course1",
+ "userId":"user123",
+ "rating":5,
+ "review":"Good course"
+}
+
+16. Leaderboard
+
+Top learners.
+
+leaderboard
+
+Example:
+
+{
+ "userId":"user123",
+ "points":200
+}
+
+Points:
+
+Quiz pass → +10
+Lesson complete → +5
+Course complete → +100
+
+19. Dashboard
+Admin Dashboard
+Total Users
+Total Courses
+Total Enrollments
+Revenue
+Trainer Dashboard
+Courses Created
+Total Students
+Course Ratings
+Learner Dashboard
+Enrolled Courses
+Progress
+Certificates
+
+20. Final LMS Flow
+Signup
+ ↓
+Email Verification
+ ↓
+Login
+ ↓
+Enroll Course
+ ↓
+Watch Lesson
+ ↓
+Attendance update
+ ↓
+Attempt Quiz
+ ↓
+Score saved
+ ↓
+Course completed
+ ↓
+Certificate generated
+ ↓
+Leaderboard update
+
+
+21. Course Structure Final
+Course
+   ↓
+Modules
+   ↓
+Lessons
+   ↓
+Video
+   ↓
+Quiz
+
+Exactly nee sonna structure
+
+Final Verdict
+
+Un idea:
+
+Course
+Module
+Lesson
+Quiz
+Attendance
+Leaderboard
+Certificates
+
+ Real LMS product structure.
+
+22. BaseEntity (Audit Fields)
+package com.lms.entity;
+
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Data
+public class BaseEntity {
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
+
+    private Boolean isActive = true;
+    private Boolean isDeleted = false;
+
+}
+
+24. Role Entity
+package com.lms.entity;
+
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Data
+@Document("roles")
+public class Role extends BaseEntity {
+
+    @Id
+    private String id;
+
+    private String name;
+
+}
+
+25.User Entity
+package com.lms.entity;
+
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Data
+@Document("users")
+public class User extends BaseEntity {
+
+    @Id
+    private String id;
+
+    private String username;
+    private String firstName;
+    private String lastName;
+
+    private String email;
+    private String password;
+
+    private String roleId;
+
+}
+
+etc...
+
+Final Course Flow
+Admin / Trainer
+        ↓
+Create Course
+        ↓
+Add Module
+        ↓
+Add Lesson
+        ↓
+Attach Video
+        ↓
+Create Quiz
+        ↓
+Publish Course
+
+Learner:
+
+Enroll Course
+     ↓
+Watch Lesson
+     ↓
+Attendance saved
+     ↓
+Attempt Quiz
+     ↓
+Score stored
+     ↓
+Course completed
+     ↓
+Certificate generated

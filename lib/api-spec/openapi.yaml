@@ -1,22 +1,95 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: LMS API specification
 servers:
   - url: /api
     description: Base API path
 tags:
+  - name: auth
+    description: Authentication operations
   - name: health
     description: Health operations
+  - name: users
+    description: User management
+  - name: courses
+    description: Course management
+  - name: modules
+    description: Module management
+  - name: lessons
+    description: Lesson management
+  - name: quizzes
+    description: Quiz management
+  - name: enrollments
+    description: Enrollment management
+  - name: categories
+    description: Category management
+  - name: dashboard
+    description: Dashboard statistics
 paths:
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current logged in user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +97,1226 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: Get all users
+      parameters:
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/UserRole"
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersResponse"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUserById
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user (role, status, etc)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /users/{id}/role:
+    patch:
+      operationId: changeUserRole
+      tags: [users]
+      summary: Change user role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRoleRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /categories:
+    get:
+      operationId: getCategories
+      tags: [categories]
+      summary: Get all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryRequest"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /courses:
+    get:
+      operationId: getCourses
+      tags: [courses]
+      summary: Get all courses
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [DRAFT, PUBLISHED, ARCHIVED]
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+        - name: trainerId
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoursesResponse"
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a new course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseRequest"
+      responses:
+        "201":
+          description: Created course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{id}:
+    get:
+      operationId: getCourseById
+      tags: [courses]
+      summary: Get course by ID with modules
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Course with modules
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseDetail"
+    put:
+      operationId: updateCourse
+      tags: [courses]
+      summary: Update course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCourseRequest"
+      responses:
+        "200":
+          description: Updated course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+    delete:
+      operationId: deleteCourse
+      tags: [courses]
+      summary: Delete course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /modules:
+    get:
+      operationId: getModules
+      tags: [modules]
+      summary: Get modules for a course
+      parameters:
+        - name: courseId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of modules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Module"
+    post:
+      operationId: createModule
+      tags: [modules]
+      summary: Create module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateModuleRequest"
+      responses:
+        "201":
+          description: Created module
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+
+  /modules/{id}:
+    put:
+      operationId: updateModule
+      tags: [modules]
+      summary: Update module
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateModuleRequest"
+      responses:
+        "200":
+          description: Updated module
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+    delete:
+      operationId: deleteModule
+      tags: [modules]
+      summary: Delete module
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /lessons:
+    get:
+      operationId: getLessons
+      tags: [lessons]
+      summary: Get lessons for a module
+      parameters:
+        - name: moduleId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of lessons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lesson"
+    post:
+      operationId: createLesson
+      tags: [lessons]
+      summary: Create lesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLessonRequest"
+      responses:
+        "201":
+          description: Created lesson
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+
+  /lessons/{id}:
+    get:
+      operationId: getLessonById
+      tags: [lessons]
+      summary: Get lesson by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lesson with quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LessonDetail"
+    put:
+      operationId: updateLesson
+      tags: [lessons]
+      summary: Update lesson
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLessonRequest"
+      responses:
+        "200":
+          description: Updated lesson
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+    delete:
+      operationId: deleteLesson
+      tags: [lessons]
+      summary: Delete lesson
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /quizzes:
+    get:
+      operationId: getQuizByLesson
+      tags: [quizzes]
+      summary: Get quiz for a lesson
+      parameters:
+        - name: lessonId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+    post:
+      operationId: createQuiz
+      tags: [quizzes]
+      summary: Create quiz for a lesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuizRequest"
+      responses:
+        "201":
+          description: Created quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+
+  /quizzes/{id}:
+    put:
+      operationId: updateQuiz
+      tags: [quizzes]
+      summary: Update quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateQuizRequest"
+      responses:
+        "200":
+          description: Updated quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+    delete:
+      operationId: deleteQuiz
+      tags: [quizzes]
+      summary: Delete quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /enrollments:
+    get:
+      operationId: getEnrollments
+      tags: [enrollments]
+      summary: Get all enrollments
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, COMPLETED, DROPPED]
+      responses:
+        "200":
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrollment"
+    post:
+      operationId: createEnrollment
+      tags: [enrollments]
+      summary: Enroll user in course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnrollmentRequest"
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /enrollments/{id}:
+    patch:
+      operationId: updateEnrollmentStatus
+      tags: [enrollments]
+      summary: Update enrollment status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnrollmentRequest"
+      responses:
+        "200":
+          description: Updated enrollment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-enrollments:
+    get:
+      operationId: getRecentEnrollments
+      tags: [dashboard]
+      summary: Get recent enrollments
+      responses:
+        "200":
+          description: Recent enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentEnrollment"
+
+  /dashboard/popular-courses:
+    get:
+      operationId: getPopularCourses
+      tags: [dashboard]
+      summary: Get popular courses
+      responses:
+        "200":
+          description: Popular courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PopularCourse"
+
 components:
   schemas:
+    UserRole:
+      type: string
+      enum: [ADMIN, TRAINER, LEARNER]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/UserRole"
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, firstName, lastName, fullName, email, roleId, isActive, createdAt, updatedAt]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/AuthUser"
+        message:
+          type: string
+      required: [user, message]
+
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/UserRole"
+        isActive:
+          type: boolean
+        enrollmentCount:
+          type: integer
+        courseCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, firstName, lastName, fullName, email, roleId, isActive, enrollmentCount, courseCount, createdAt, updatedAt]
+
+    UsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+      required: [users, total, page, limit, totalPages]
+
+    CreateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/UserRole"
+        password:
+          type: string
+      required: [firstName, lastName, email, roleId, password]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/UserRole"
+        isActive:
+          type: boolean
+
+    ChangeRoleRequest:
+      type: object
+      properties:
+        role:
+          $ref: "#/components/schemas/UserRole"
+      required: [role]
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        courseCount:
+          type: integer
+      required: [id, name, courseCount]
+
+    CreateCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+      required: [name]
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        thumbnail:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, ARCHIVED]
+        level:
+          type: string
+          enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+        price:
+          type: number
+          nullable: true
+        categoryId:
+          type: integer
+          nullable: true
+        trainerId:
+          type: integer
+          nullable: true
+        categoryName:
+          type: string
+          nullable: true
+        trainerName:
+          type: string
+          nullable: true
+        enrollmentCount:
+          type: integer
+        moduleCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, title, status, level, enrollmentCount, moduleCount, createdAt, updatedAt]
+
+    Module:
+      type: object
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        orderIndex:
+          type: integer
+        lessonCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, courseId, title, orderIndex, lessonCount, createdAt, updatedAt]
+
+    CreateModuleRequest:
+      type: object
+      properties:
+        courseId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        orderIndex:
+          type: integer
+      required: [courseId, title]
+
+    UpdateModuleRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        orderIndex:
+          type: integer
+
+    CourseDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        thumbnail:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, ARCHIVED]
+        level:
+          type: string
+          enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+        price:
+          type: number
+          nullable: true
+        categoryId:
+          type: integer
+          nullable: true
+        trainerId:
+          type: integer
+          nullable: true
+        categoryName:
+          type: string
+          nullable: true
+        trainerName:
+          type: string
+          nullable: true
+        enrollmentCount:
+          type: integer
+        moduleCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        modules:
+          type: array
+          items:
+            $ref: "#/components/schemas/Module"
+      required: [id, title, status, level, enrollmentCount, moduleCount, createdAt, updatedAt, modules]
+
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: integer
+        moduleId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        videoUrl:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+        orderIndex:
+          type: integer
+        quiz:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/QuizSummary"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, moduleId, title, orderIndex, createdAt, updatedAt]
+
+    LessonDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        moduleId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        videoUrl:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+        orderIndex:
+          type: integer
+        quiz:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Quiz"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, moduleId, title, orderIndex, createdAt, updatedAt]
+
+    CreateLessonRequest:
+      type: object
+      properties:
+        moduleId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        videoUrl:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+        orderIndex:
+          type: integer
+      required: [moduleId, title]
+
+    UpdateLessonRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        videoUrl:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+        orderIndex:
+          type: integer
+
+    QuizQuestion:
+      type: object
+      properties:
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        answer:
+          type: string
+      required: [question, options, answer]
+
+    QuizSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        lessonId:
+          type: integer
+      required: [id, title, lessonId]
+
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: integer
+        lessonId:
+          type: integer
+        title:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, lessonId, title, questions, createdAt, updatedAt]
+
+    CreateQuizRequest:
+      type: object
+      properties:
+        lessonId:
+          type: integer
+        title:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+      required: [lessonId, questions]
+
+    UpdateQuizRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+
+    Enrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        courseId:
+          type: integer
+        status:
+          type: string
+          enum: [ACTIVE, COMPLETED, DROPPED]
+        progress:
+          type: integer
+        userName:
+          type: string
+          nullable: true
+        courseName:
+          type: string
+          nullable: true
+        enrolledAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, courseId, status, progress, enrolledAt, updatedAt]
+
+    CreateEnrollmentRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+        courseId:
+          type: integer
+      required: [userId, courseId]
+
+    UpdateEnrollmentRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ACTIVE, COMPLETED, DROPPED]
+        progress:
+          type: integer
+
+    DashboardStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalCourses:
+          type: integer
+        totalEnrollments:
+          type: integer
+        totalTrainers:
+          type: integer
+        totalLearners:
+          type: integer
+        activeEnrollments:
+          type: integer
+        completedEnrollments:
+          type: integer
+        publishedCourses:
+          type: integer
+      required: [totalUsers, totalCourses, totalEnrollments, totalTrainers, totalLearners, activeEnrollments, completedEnrollments, publishedCourses]
+
+    RecentEnrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+        userName:
+          type: string
+        courseName:
+          type: string
+        status:
+          type: string
+        enrolledAt:
+          type: string
+      required: [id, userName, courseName, status, enrolledAt]
+
+    PopularCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        enrollmentCount:
+          type: integer
+        trainerName:
+          type: string
+          nullable: true
+      required: [id, title, enrollmentCount]

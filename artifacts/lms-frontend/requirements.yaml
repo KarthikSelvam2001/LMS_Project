@@ -1,0 +1,14 @@
+packages:
+  "recharts": "For rendering dashboard charts and analytics"
+  "react-hook-form": "For form state management"
+  "@hookform/resolvers": "For Zod form validation integration"
+  "zod": "For defining form validation schemas locally"
+  "date-fns": "For formatting dates in tables and UI"
+images:
+  - path: "artifacts/lms-frontend/public/images/lms-logo.png"
+    description: "Minimalist modern logo for a professional Learning Management System. Abstract geometric shape resembling a book or graduation cap, dark blue and soft slate colors, isolated on transparent background"
+    aspect_ratio: "1:1"
+notes:
+  - "Using generated hooks from @workspace/api-client-react for TanStack Query data fetching."
+  - "Mutations from orval expect { data: payload } or { id, data: payload } as the mutation argument."
+  - "Using Wouter for all routing and programmatic navigation."
