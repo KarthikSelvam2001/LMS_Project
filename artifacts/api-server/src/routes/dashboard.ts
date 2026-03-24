@@ -1,117 +1,221 @@
-import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { Router, type Response } from "express";
+import { User, Course, Enrollment, Module, Lesson, Quiz, Certificate, Leaderboard } from "@workspace/db";
+import { AuthRequest } from "../middlewares/auth";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.get("/dashboard/stats", async (req, res) => {
+router.get("/dashboard/stats", async (req: AuthRequest, res: Response) => {
   try {
-    const { userId, role } = req.query as Record<string, string>;
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const { id: userId, roleId: role } = user;
 
     // Admin dashboard
-    if (!userId || role === "ADMIN") {
-      const [users, trainers, learners, courses, publishedCourses, enrollments, completedEnrollments, modules, lessons, quizzes] = await Promise.all([
-        db.execute(sql`SELECT COUNT(*)::int as count FROM users WHERE is_deleted = false`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM users WHERE role_id = 'TRAINER' AND is_deleted = false`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM users WHERE role_id = 'LEARNER' AND is_deleted = false`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM courses`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM courses WHERE status = 'PUBLISHED'`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM enrollments`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM enrollments WHERE status = 'COMPLETED'`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM modules`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM lessons`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM quizzes`),
+    if (role === "ADMIN") {
+      const [
+        totalUsers,
+        totalTrainers,
+        totalLearners,
+        totalCourses,
+        publishedCourses,
+        totalEnrollments,
+        completedEnrollments,
+        totalModules,
+        totalLessons,
+        totalQuizzes
+      ] = await Promise.all([
+        User.countDocuments({ isDeleted: false }),
+        User.countDocuments({ roleId: "TRAINER", isDeleted: false }),
+        User.countDocuments({ roleId: "LEARNER", isDeleted: false }),
+        Course.countDocuments({ isDeleted: { $ne: true } }),
+        Course.countDocuments({ status: "PUBLISHED", isDeleted: { $ne: true } }),
+        Enrollment.countDocuments({ isDeleted: { $ne: true } }),
+        Enrollment.countDocuments({ status: "COMPLETED", isDeleted: { $ne: true } }),
+        Module.countDocuments({ isDeleted: { $ne: true } }),
+        Lesson.countDocuments({ isDeleted: { $ne: true } }),
+        Quiz.countDocuments({ isDeleted: { $ne: true } }),
       ]);
 
       return res.json({
         role: "ADMIN",
-        totalUsers: (users.rows[0] as any)?.count ?? 0,
-        totalTrainers: (trainers.rows[0] as any)?.count ?? 0,
-        totalLearners: (learners.rows[0] as any)?.count ?? 0,
-        totalCourses: (courses.rows[0] as any)?.count ?? 0,
-        publishedCourses: (publishedCourses.rows[0] as any)?.count ?? 0,
-        totalEnrollments: (enrollments.rows[0] as any)?.count ?? 0,
-        completedEnrollments: (completedEnrollments.rows[0] as any)?.count ?? 0,
-        totalModules: (modules.rows[0] as any)?.count ?? 0,
-        totalLessons: (lessons.rows[0] as any)?.count ?? 0,
-        totalQuizzes: (quizzes.rows[0] as any)?.count ?? 0,
+        totalUsers,
+        totalTrainers,
+        totalLearners,
+        totalCourses,
+        publishedCourses,
+        totalEnrollments,
+        completedEnrollments,
+        totalModules,
+        totalLessons,
+        totalQuizzes,
       });
     }
 
-    const uid = parseInt(userId);
-
     // Trainer dashboard
     if (role === "TRAINER") {
-      const [myCourses, totalStudents, publishedCourses, ratings] = await Promise.all([
-        db.execute(sql`SELECT COUNT(*)::int as count FROM courses WHERE trainer_id = ${uid}`),
-        db.execute(sql`SELECT COUNT(DISTINCT e.user_id)::int as count FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE c.trainer_id = ${uid}`),
-        db.execute(sql`SELECT COUNT(*)::int as count FROM courses WHERE trainer_id = ${uid} AND status = 'PUBLISHED'`),
-        db.execute(sql`SELECT COALESCE(AVG(rating), 0)::float as avg FROM course_ratings cr JOIN courses c ON cr.course_id = c.id WHERE c.trainer_id = ${uid}`).catch(() => [{ rows: [{ avg: 0 }] }]),
-      ]);
+      const myCourses = await Course.find({ trainerId: userId, isDeleted: { $ne: true } });
+      const myCourseIds = myCourses.map(c => c._id);
 
-      const recentEnrollments = await db.execute(sql`
-        SELECT e.id, u.first_name, u.last_name, c.title as course_title, e.enrolled_at, e.progress
-        FROM enrollments e
-        JOIN users u ON e.user_id = u.id
-        JOIN courses c ON e.course_id = c.id
-        WHERE c.trainer_id = ${uid}
-        ORDER BY e.enrolled_at DESC
-        LIMIT 5
-      `);
+      const [
+        publishedCount,
+        totalStudents,
+        totalLessons,
+      ] = await Promise.all([
+        Course.countDocuments({ trainerId: userId, status: "PUBLISHED", isDeleted: { $ne: true } }),
+        Enrollment.distinct('userId', { courseId: { $in: myCourseIds }, isDeleted: { $ne: true } }).then(ids => ids.length),
+        Lesson.countDocuments({ 
+          moduleId: { $in: await Module.find({ courseId: { $in: myCourseIds }, isDeleted: { $ne: true } }).distinct('_id') },
+          isDeleted: { $ne: true }
+        }),
+      ]);
 
       return res.json({
         role: "TRAINER",
-        totalCourses: (myCourses.rows[0] as any)?.count ?? 0,
-        publishedCourses: (publishedCourses.rows[0] as any)?.count ?? 0,
-        totalStudents: (totalStudents.rows[0] as any)?.count ?? 0,
-        averageRating: parseFloat((ratings as any).rows?.[0]?.avg ?? 0).toFixed(1),
-        recentEnrollments: recentEnrollments.rows.map((r: any) => ({
-          id: r.id,
-          learnerName: `${r.first_name} ${r.last_name}`,
-          courseTitle: r.course_title,
-          enrolledAt: r.enrolled_at,
-          progress: r.progress,
-        })),
+        totalCourses: myCourses.length,
+        publishedCourses: publishedCount,
+        totalStudents,
+        totalLessons,
+        averageRating: "0.0",
       });
     }
 
     // Learner dashboard
-    const [enrolledCourses, completedCourses, certificates, totalPoints] = await Promise.all([
-      db.execute(sql`SELECT COUNT(*)::int as count FROM enrollments WHERE user_id = ${uid}`),
-      db.execute(sql`SELECT COUNT(*)::int as count FROM enrollments WHERE user_id = ${uid} AND status = 'COMPLETED'`),
-      db.execute(sql`SELECT COUNT(*)::int as count FROM certificates WHERE user_id = ${uid}`),
-      db.execute(sql`SELECT COALESCE(points, 0) as points FROM leaderboard WHERE user_id = ${uid}`),
+    if (role === "LEARNER") {
+      const [enrolledCount, completedCount, lbEntry] = await Promise.all([
+        Enrollment.countDocuments({ userId, isDeleted: { $ne: true } }),
+        Enrollment.countDocuments({ userId, status: "COMPLETED", isDeleted: { $ne: true } }),
+        Leaderboard.findOne({ userId }),
+      ]);
+
+      const inProgressCount = enrolledCount - completedCount;
+
+      return res.json({
+        role: "LEARNER",
+        enrolledCourses: enrolledCount,
+        completedCourses: completedCount,
+        inProgressCourses: inProgressCount,
+        points: lbEntry ? lbEntry.score : 0,
+        myCourses: enrolledCount, // Adding these for consistency with learner-stats if requested
+        pointsEarned: lbEntry ? lbEntry.score : 0
+      });
+    }
+
+    return res.status(403).json({ message: "Invalid role for stats" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to fetch dashboard stats" });
+  }
+});
+
+// New specific route for learner stats as requested in Issue 5
+router.get("/dashboard/learner-stats", async (req: AuthRequest, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (user.roleId !== "LEARNER") return res.status(403).json({ message: "Forbidden" });
+
+    const userId = user.id;
+
+    const [enrollments, lbEntry] = await Promise.all([
+      Enrollment.find({ userId, isDeleted: { $ne: true } }),
+      Leaderboard.findOne({ userId }),
     ]);
 
-    const myCourses = await db.execute(sql`
-      SELECT e.id, c.title, e.status, e.progress, e.enrolled_at,
-             u.first_name as trainer_first, u.last_name as trainer_last
-      FROM enrollments e
-      JOIN courses c ON e.course_id = c.id
-      LEFT JOIN users u ON c.trainer_id = u.id
-      WHERE e.user_id = ${uid}
-      ORDER BY e.enrolled_at DESC
-      LIMIT 5
-    `);
+    const myCourses = enrollments.length;
+    const completedCourses = enrollments.filter(e => e.status === "COMPLETED").length;
+    const inProgressCourses = myCourses - completedCourses;
+    const pointsEarned = lbEntry ? lbEntry.score : 0;
 
     return res.json({
-      role: "LEARNER",
-      enrolledCourses: (enrolledCourses.rows[0] as any)?.count ?? 0,
-      completedCourses: (completedCourses.rows[0] as any)?.count ?? 0,
-      certificates: (certificates.rows[0] as any)?.count ?? 0,
-      points: (totalPoints.rows[0] as any)?.points ?? 0,
-      myCourses: myCourses.rows.map((r: any) => ({
-        id: r.id,
-        title: r.title,
-        status: r.status,
-        progress: r.progress,
-        enrolledAt: r.enrolled_at,
-        trainerName: r.trainer_first ? `${r.trainer_first} ${r.trainer_last}` : null,
-      })),
+      myCourses,
+      completedCourses,
+      inProgressCourses,
+      pointsEarned
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    return res.status(500).json({ message: "Failed to fetch learner stats" });
+  }
+});
+
+router.get("/dashboard/recent-enrollments", async (req: AuthRequest, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const query: any = { isDeleted: { $ne: true } };
+    
+    // If trainer, limit to their courses
+    if (user.roleId === "TRAINER") {
+      const myCourseIds = await Course.find({ trainerId: user.id, isDeleted: { $ne: true } }).distinct('_id');
+      query.courseId = { $in: myCourseIds };
+    }
+    
+    // If learner, limit to their own enrollments (Issue 8)
+    if (user.roleId === "LEARNER") {
+      query.userId = user.id;
+    }
+
+    const enrollmentsRaw = await Enrollment.find(query)
+      .populate("userId", "firstName lastName")
+      .populate("courseId", "title")
+      .sort({ enrolledAt: -1 })
+      .limit(5);
+
+    const enrollments = enrollmentsRaw.map((e: any) => ({
+      id: e._id,
+      userName: e.userId ? `${e.userId.firstName} ${e.userId.lastName}` : "Unknown",
+      courseTitle: e.courseId ? e.courseId.title : "Unknown",
+      enrolledAt: e.enrolledAt,
+      progress: e.progress,
+      status: e.status,
+    }));
+
+    return res.json(enrollments);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to fetch recent enrollments" });
+  }
+});
+
+router.get("/dashboard/popular-courses", async (req: AuthRequest, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const query: any = { status: "PUBLISHED", isDeleted: { $ne: true } };
+    
+    if (user.roleId === "TRAINER") {
+      query.trainerId = user.id;
+    }
+
+    const courses = await Course.find(query)
+      .populate("trainerId", "firstName lastName")
+      .populate("categoryId", "name")
+      .limit(10); // Find more to filter properly
+
+    const popular = await Promise.all(
+      courses.map(async (c: any) => {
+        const studentCount = await Enrollment.countDocuments({ courseId: c._id, isDeleted: { $ne: true } });
+        return {
+          id: c._id,
+          title: c.title,
+          level: c.level || "BEGINNER",
+          categoryName: c.categoryId ? c.categoryId.name : "Uncategorized",
+          trainerName: c.trainerId ? `${c.trainerId.firstName} ${c.trainerId.lastName}` : "Unknown",
+          enrollmentCount: studentCount,
+          rating: 0,
+        };
+      })
+    );
+    
+    popular.sort((a, b) => b.enrollmentCount - a.enrollmentCount);
+
+    return res.json(popular.slice(0, 5));
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to fetch popular courses" });
   }
 });
 

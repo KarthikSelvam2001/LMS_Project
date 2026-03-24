@@ -1,29 +1,30 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { Leaderboard } from "@workspace/db";
 
 const router: IRouter = Router();
 
 router.get("/leaderboard", async (_req, res) => {
   try {
-    const result = await db.execute(sql`
-      SELECT l.user_id, l.points, u.first_name, u.last_name, u.email,
-             RANK() OVER (ORDER BY l.points DESC) as rank
-      FROM leaderboard l
-      JOIN users u ON l.user_id = u.id
-      WHERE u.is_active = true AND u.is_deleted = false
-      ORDER BY l.points DESC
-      LIMIT 50
-    `);
+    const leaderboard = await Leaderboard.find()
+      .populate("userId", "firstName lastName email isActive isDeleted")
+      .sort({ score: -1 })
+      .limit(100);
 
-    res.json(result.rows.map((r: any) => ({
-      rank: parseInt(r.rank),
-      userId: r.user_id,
-      fullName: `${r.first_name} ${r.last_name}`,
-      email: r.email,
-      points: r.points,
-    })));
+    const filtered = leaderboard
+      .filter((l: any) => l.userId && l.userId.isActive && !l.userId.isDeleted)
+      .slice(0, 50);
+
+    const result = filtered.map((l: any, index) => ({
+      rank: index + 1,
+      userId: l.userId._id,
+      fullName: `${l.userId.firstName} ${l.userId.lastName}`,
+      email: l.userId.email,
+      points: l.score,
+    }));
+
+    res.json(result);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch leaderboard" });
   }
 });

@@ -10,10 +10,10 @@ import type { GetCoursesStatus } from "./getCoursesStatus";
 
 export type GetCoursesParams = {
   search?: string;
-  categoryId?: number;
+  categoryId?: string;
   status?: GetCoursesStatus;
   level?: GetCoursesLevel;
-  trainerId?: number;
+  trainerId?: string;
   page?: number;
   limit?: number;
 };

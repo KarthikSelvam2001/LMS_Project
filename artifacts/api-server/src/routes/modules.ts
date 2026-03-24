@@ -1,96 +1,99 @@
-import { Router, type IRouter } from "express";
-import { db, modulesTable, lessonsTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { Router, type Response } from "express";
+import { Module, Lesson, mongoose } from "@workspace/db";
+import { AuthRequest, authorize } from "../middlewares/auth";
 
-const router: IRouter = Router();
+const router = Router();
 
-function fmt(m: typeof modulesTable.$inferSelect) {
-  return { ...m, createdAt: m.createdAt.toISOString(), updatedAt: m.updatedAt.toISOString() };
+function fmt(m: any) {
+  return { ...m.toObject(), id: m._id };
 }
 
-router.get("/modules", async (req, res) => {
+router.get("/modules", async (req: AuthRequest, res: Response) => {
   try {
     const { courseId } = req.query as Record<string, string>;
-    if (!courseId) return res.status(400).json({ message: "courseId required" });
+    if (!courseId || courseId === "NaN" || courseId === "undefined") {
+      return res.status(400).json({ message: "Invalid or missing courseId" });
+    }
 
-    const modules = await db.select().from(modulesTable)
-      .where(eq(modulesTable.courseId, parseInt(courseId)))
-      .orderBy(modulesTable.orderIndex);
+    console.log("[modules] GET /modules courseId:", courseId);
+
+    const filter: any = { courseId: new mongoose.Types.ObjectId(courseId), isDeleted: { $ne: true } };
+    const modules = await Module.find(filter).sort({ orderIndex: 1 });
+
+    console.log("[modules] found:", modules.length);
 
     const withCounts = await Promise.all(
       modules.map(async (m) => {
-        const [lc] = await db.select({ count: sql<number>`count(*)::int` }).from(lessonsTable).where(eq(lessonsTable.moduleId, m.id));
-        return { ...fmt(m), lessonCount: lc?.count ?? 0 };
+        const lessonCount = await Lesson.countDocuments({ moduleId: m._id, isDeleted: { $ne: true } });
+        return { ...fmt(m), lessonCount };
       })
     );
 
-    res.json(withCounts);
+    return res.json(withCounts);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch modules" });
+    console.error("[modules] error:", err);
+    return res.status(500).json({ message: "Failed to fetch modules" });
   }
 });
 
-router.post("/modules", async (req, res) => {
+router.post("/modules", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
     const { courseId, title, description, orderIndex = 0 } = req.body;
     if (!courseId || !title) return res.status(400).json({ message: "courseId and title required" });
 
-    const [m] = await db.insert(modulesTable).values({
-      courseId: parseInt(courseId),
+    const m = await Module.create({
+      courseId,
       title,
       description,
       orderIndex,
-    }).returning();
+    });
 
-    res.status(201).json({ ...fmt(m), lessonCount: 0 });
+    return res.status(201).json({ ...fmt(m), lessonCount: 0 });
   } catch (err) {
-    res.status(500).json({ message: "Failed to create module" });
+    return res.status(500).json({ message: "Failed to create module" });
   }
 });
 
-router.get("/modules/:id", async (req, res) => {
+router.get("/modules/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    const [m] = await db.select().from(modulesTable).where(eq(modulesTable.id, id));
+    const m = await Module.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
     if (!m) return res.status(404).json({ message: "Module not found" });
 
-    const lessons = await db.select().from(lessonsTable)
-      .where(eq(lessonsTable.moduleId, id))
-      .orderBy(lessonsTable.orderIndex);
+    const lessons = await Lesson.find({ moduleId: m._id, isDeleted: { $ne: true } }).sort({ orderIndex: 1 });
 
-    res.json({
+    return res.json({
       ...fmt(m),
-      lessons: lessons.map(l => ({ ...l, createdAt: l.createdAt.toISOString(), updatedAt: l.updatedAt.toISOString() })),
+      lessons,
     });
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch module" });
+    return res.status(500).json({ message: "Failed to fetch module" });
   }
 });
 
-router.put("/modules/:id", async (req, res) => {
+router.put("/modules/:id", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
     const { title, description, orderIndex } = req.body;
 
-    const [m] = await db.update(modulesTable)
-      .set({ title, description, orderIndex, updatedAt: new Date() })
-      .where(eq(modulesTable.id, id))
-      .returning();
+    const m = await Module.findByIdAndUpdate(
+      req.params.id,
+      { title, description, orderIndex },
+      { new: true }
+    );
 
     if (!m) return res.status(404).json({ message: "Module not found" });
-    res.json(fmt(m));
+    return res.json(fmt(m));
   } catch (err) {
-    res.status(500).json({ message: "Failed to update module" });
+    return res.status(500).json({ message: "Failed to update module" });
   }
 });
 
-router.delete("/modules/:id", async (req, res) => {
+router.delete("/modules/:id", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    await db.delete(modulesTable).where(eq(modulesTable.id, id));
-    res.json({ message: "Module deleted successfully" });
+    const m = await Module.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    if (!m) return res.status(404).json({ message: "Module not found" });
+    return res.json({ message: "Module deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete module" });
+    return res.status(500).json({ message: "Failed to delete module" });
   }
 });
 

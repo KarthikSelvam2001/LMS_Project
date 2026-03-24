@@ -5,12 +5,14 @@ import {
   useGetRecentEnrollments, 
   useGetPopularCourses 
 } from "@workspace/api-client-react";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, GraduationCap, Clock } from "lucide-react";
+import { Users, BookOpen, GraduationCap, Clock, CheckCircle, PlayCircle, Trophy } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: recent, isLoading: recentLoading } = useGetRecentEnrollments();
   const { data: popular, isLoading: popularLoading } = useGetPopularCourses();
@@ -26,81 +28,207 @@ export default function Dashboard() {
     }
   };
 
+  const renderAdminStats = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalUsers}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {stats?.totalLearners} students • {stats?.totalTrainers} trainers
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Courses</CardTitle>
+          <div className="p-2 bg-indigo-500/10 rounded-lg">
+            <BookOpen className="w-5 h-5 text-indigo-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalCourses}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {stats?.publishedCourses} published • {stats?.totalModules} modules
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Enrollments</CardTitle>
+          <div className="p-2 bg-green-500/10 rounded-lg">
+            <GraduationCap className="w-5 h-5 text-green-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalEnrollments}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {stats?.completedEnrollments} completed total
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Lessons</CardTitle>
+          <div className="p-2 bg-orange-500/10 rounded-lg">
+            <Clock className="w-5 h-5 text-orange-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalLessons}</div>
+          <p className="text-xs text-muted-foreground mt-1">Across all courses</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderTrainerStats = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">My Courses</CardTitle>
+          <div className="p-2 bg-indigo-500/10 rounded-lg">
+            <BookOpen className="w-5 h-5 text-indigo-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalCourses}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {stats?.publishedCourses} published
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Students</CardTitle>
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalStudents}</div>
+          <p className="text-xs text-muted-foreground mt-1">Enrolled in your courses</p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Lessons</CardTitle>
+          <div className="p-2 bg-orange-500/10 rounded-lg">
+            <Clock className="w-5 h-5 text-orange-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalLessons}</div>
+          <p className="text-xs text-muted-foreground mt-1">Across your modules</p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Average Rating</CardTitle>
+          <div className="p-2 bg-yellow-500/10 rounded-lg">
+            <Trophy className="w-5 h-5 text-yellow-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.averageRating}</div>
+          <p className="text-xs text-muted-foreground mt-1">From student feedback</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderLearnerStats = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">My Courses</CardTitle>
+          <div className="p-2 bg-indigo-500/10 rounded-lg">
+            <BookOpen className="w-5 h-5 text-indigo-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.enrolledCourses}</div>
+          <p className="text-xs text-muted-foreground mt-1">Total enrollments</p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+          <div className="p-2 bg-green-500/10 rounded-lg">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.completedCourses}</div>
+          <p className="text-xs text-muted-foreground mt-1">Courses finished</p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <PlayCircle className="w-5 h-5 text-primary" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.inProgressCourses}</div>
+          <p className="text-xs text-muted-foreground mt-1">Currently learning</p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Points Earned</CardTitle>
+          <div className="p-2 bg-yellow-500/10 rounded-lg">
+            <Trophy className="w-5 h-5 text-yellow-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.points}</div>
+          <p className="text-xs text-muted-foreground mt-1">Quiz achievements</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8 pb-10">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Dashboard Overview</h1>
-          <p className="text-muted-foreground mt-1 text-lg">Welcome back. Here's what's happening today.</p>
+          <p className="text-muted-foreground mt-1 text-lg">
+            Welcome back, {user?.fullName}. Here's what's happening today.
+          </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalUsers}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats?.totalStudents} students • {stats?.totalInstructors} instructors
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Courses</CardTitle>
-              <div className="p-2 bg-indigo-500/10 rounded-lg">
-                <BookOpen className="w-5 h-5 text-indigo-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalCourses}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats?.publishedCourses} published • {stats?.totalCategories} categories
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Enrollments</CardTitle>
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <GraduationCap className="w-5 h-5 text-green-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalEnrollments}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats?.activeEnrollments} active • {stats?.completedEnrollments} completed
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Lessons</CardTitle>
-              <div className="p-2 bg-orange-500/10 rounded-lg">
-                <Clock className="w-5 h-5 text-orange-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{statsLoading ? "..." : stats?.totalLessons}</div>
-              <p className="text-xs text-muted-foreground mt-1">Across all courses</p>
-            </CardContent>
-          </Card>
-        </div>
+        {user?.roleId === "ADMIN" && renderAdminStats()}
+        {user?.roleId === "TRAINER" && renderTrainerStats()}
+        {user?.roleId === "LEARNER" && renderLearnerStats()}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Enrollments */}
           <Card className="flex flex-col border-border/60 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Recent Enrollments</CardTitle>
-              <CardDescription>The latest student activity</CardDescription>
+              <CardTitle className="text-lg">
+                {user?.roleId === "LEARNER" ? "My Recent Activity" : "Recent Enrollments"}
+              </CardTitle>
+              <CardDescription>
+                {user?.roleId === "LEARNER" ? "Your journey progress" : "The latest student activity"}
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto">
               {recentLoading ? (
@@ -125,16 +253,20 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="py-8 text-center text-muted-foreground border border-dashed rounded-xl">No recent enrollments</div>
+                <div className="py-8 text-center text-muted-foreground border border-dashed rounded-xl">No recent activity</div>
               )}
             </CardContent>
           </Card>
 
-          {/* Popular Courses */}
+          {/* Popular/Recommended Courses */}
           <Card className="flex flex-col border-border/60 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Popular Courses</CardTitle>
-              <CardDescription>Most enrolled courses currently</CardDescription>
+              <CardTitle className="text-lg">
+                {user?.roleId === "LEARNER" ? "Recommended For You" : "Popular Courses"}
+              </CardTitle>
+              <CardDescription>
+                {user?.roleId === "LEARNER" ? "Top courses based on your area" : "Most enrolled courses currently"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {popularLoading ? (
@@ -148,7 +280,7 @@ export default function Dashboard() {
                           <span className="font-semibold text-sm">{course.title}</span>
                           <Badge variant="secondary" className="text-[10px] h-5">{course.level}</Badge>
                         </div>
-                        <span className="text-xs text-muted-foreground">{course.categoryName} • by {course.instructorName}</span>
+                        <span className="text-xs text-muted-foreground">{course.categoryName} • by {course.trainerName}</span>
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-lg font-bold text-primary">{course.enrollmentCount}</span>
@@ -158,7 +290,7 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="py-8 text-center text-muted-foreground border border-dashed rounded-xl">No popular courses yet</div>
+                <div className="py-8 text-center text-muted-foreground border border-dashed rounded-xl">No courses yet</div>
               )}
             </CardContent>
           </Card>

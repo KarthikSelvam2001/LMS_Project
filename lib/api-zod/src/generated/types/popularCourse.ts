@@ -7,7 +7,7 @@
  */
 
 export interface PopularCourse {
-  id: number;
+  id: string;
   title: string;
   enrollmentCount: number;
   trainerName?: string | null;

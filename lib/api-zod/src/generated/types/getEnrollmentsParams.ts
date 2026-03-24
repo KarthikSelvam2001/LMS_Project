@@ -8,7 +8,7 @@
 import type { GetEnrollmentsStatus } from "./getEnrollmentsStatus";
 
 export type GetEnrollmentsParams = {
-  userId?: number;
-  courseId?: number;
+  userId?: string;
+  courseId?: string;
   status?: GetEnrollmentsStatus;
 };

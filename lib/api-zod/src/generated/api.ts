@@ -17,7 +17,7 @@ export const LoginBody = zod.object({
 
 export const LoginResponse = zod.object({
   user: zod.object({
-    id: zod.number(),
+    id: zod.string(),
     firstName: zod.string(),
     lastName: zod.string(),
     fullName: zod.string(),
@@ -41,7 +41,7 @@ export const LogoutResponse = zod.object({
  * @summary Get current logged in user
  */
 export const GetMeResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   firstName: zod.string(),
   lastName: zod.string(),
   fullName: zod.string(),
@@ -75,7 +75,7 @@ export const GetUsersQueryParams = zod.object({
 export const GetUsersResponse = zod.object({
   users: zod.array(
     zod.object({
-      id: zod.number(),
+      id: zod.string(),
       firstName: zod.string(),
       lastName: zod.string(),
       fullName: zod.string(),
@@ -109,11 +109,11 @@ export const CreateUserBody = zod.object({
  * @summary Get user by ID
  */
 export const GetUserByIdParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const GetUserByIdResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   firstName: zod.string(),
   lastName: zod.string(),
   fullName: zod.string(),
@@ -130,7 +130,7 @@ export const GetUserByIdResponse = zod.object({
  * @summary Update user (role, status, etc)
  */
 export const UpdateUserParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const UpdateUserBody = zod.object({
@@ -142,7 +142,7 @@ export const UpdateUserBody = zod.object({
 });
 
 export const UpdateUserResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   firstName: zod.string(),
   lastName: zod.string(),
   fullName: zod.string(),
@@ -159,7 +159,7 @@ export const UpdateUserResponse = zod.object({
  * @summary Delete user
  */
 export const DeleteUserParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const DeleteUserResponse = zod.object({
@@ -170,7 +170,7 @@ export const DeleteUserResponse = zod.object({
  * @summary Change user role
  */
 export const ChangeUserRoleParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const ChangeUserRoleBody = zod.object({
@@ -178,7 +178,7 @@ export const ChangeUserRoleBody = zod.object({
 });
 
 export const ChangeUserRoleResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   firstName: zod.string(),
   lastName: zod.string(),
   fullName: zod.string(),
@@ -195,7 +195,7 @@ export const ChangeUserRoleResponse = zod.object({
  * @summary Get all categories
  */
 export const GetCategoriesResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   name: zod.string(),
   description: zod.string().nullish(),
   color: zod.string().nullish(),
@@ -220,10 +220,10 @@ export const getCoursesQueryLimitDefault = 10;
 
 export const GetCoursesQueryParams = zod.object({
   search: zod.coerce.string().optional(),
-  categoryId: zod.coerce.number().optional(),
+  categoryId: zod.coerce.string().optional(),
   status: zod.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
   level: zod.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]).optional(),
-  trainerId: zod.coerce.number().optional(),
+  trainerId: zod.coerce.string().optional(),
   page: zod.coerce.number().default(getCoursesQueryPageDefault),
   limit: zod.coerce.number().default(getCoursesQueryLimitDefault),
 });
@@ -239,19 +239,19 @@ export const CreateCourseBody = zod.unknown();
  * @summary Get course by ID with modules
  */
 export const GetCourseByIdParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const GetCourseByIdResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   thumbnail: zod.string().nullish(),
   status: zod.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   level: zod.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]),
   price: zod.number().nullish(),
-  categoryId: zod.number().nullish(),
-  trainerId: zod.number().nullish(),
+  categoryId: zod.string().nullish(),
+  trainerId: zod.string().nullish(),
   categoryName: zod.string().nullish(),
   trainerName: zod.string().nullish(),
   enrollmentCount: zod.number(),
@@ -260,8 +260,8 @@ export const GetCourseByIdResponse = zod.object({
   updatedAt: zod.string(),
   modules: zod.array(
     zod.object({
-      id: zod.number(),
-      courseId: zod.number(),
+      id: zod.string(),
+      courseId: zod.string(),
       title: zod.string(),
       description: zod.string().nullish(),
       orderIndex: zod.number(),
@@ -276,21 +276,21 @@ export const GetCourseByIdResponse = zod.object({
  * @summary Update course
  */
 export const UpdateCourseParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const UpdateCourseBody = zod.unknown();
 
 export const UpdateCourseResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   thumbnail: zod.string().nullish(),
   status: zod.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   level: zod.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]),
   price: zod.number().nullish(),
-  categoryId: zod.number().nullish(),
-  trainerId: zod.number().nullish(),
+  categoryId: zod.string().nullish(),
+  trainerId: zod.string().nullish(),
   categoryName: zod.string().nullish(),
   trainerName: zod.string().nullish(),
   enrollmentCount: zod.number(),
@@ -303,7 +303,7 @@ export const UpdateCourseResponse = zod.object({
  * @summary Delete course
  */
 export const DeleteCourseParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const DeleteCourseResponse = zod.object({
@@ -314,12 +314,12 @@ export const DeleteCourseResponse = zod.object({
  * @summary Get modules for a course
  */
 export const GetModulesQueryParams = zod.object({
-  courseId: zod.coerce.number(),
+  courseId: zod.coerce.string(),
 });
 
 export const GetModulesResponseItem = zod.object({
-  id: zod.number(),
-  courseId: zod.number(),
+  id: zod.string(),
+  courseId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   orderIndex: zod.number(),
@@ -333,7 +333,7 @@ export const GetModulesResponse = zod.array(GetModulesResponseItem);
  * @summary Create module
  */
 export const CreateModuleBody = zod.object({
-  courseId: zod.number(),
+  courseId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   orderIndex: zod.number().optional(),
@@ -343,7 +343,7 @@ export const CreateModuleBody = zod.object({
  * @summary Update module
  */
 export const UpdateModuleParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const UpdateModuleBody = zod.object({
@@ -353,8 +353,8 @@ export const UpdateModuleBody = zod.object({
 });
 
 export const UpdateModuleResponse = zod.object({
-  id: zod.number(),
-  courseId: zod.number(),
+  id: zod.string(),
+  courseId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   orderIndex: zod.number(),
@@ -367,7 +367,7 @@ export const UpdateModuleResponse = zod.object({
  * @summary Delete module
  */
 export const DeleteModuleParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const DeleteModuleResponse = zod.object({
@@ -378,12 +378,12 @@ export const DeleteModuleResponse = zod.object({
  * @summary Get lessons for a module
  */
 export const GetLessonsQueryParams = zod.object({
-  moduleId: zod.coerce.number(),
+  moduleId: zod.coerce.string(),
 });
 
 export const GetLessonsResponseItem = zod.object({
-  id: zod.number(),
-  moduleId: zod.number(),
+  id: zod.string(),
+  moduleId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   videoUrl: zod.string().nullish(),
@@ -391,9 +391,9 @@ export const GetLessonsResponseItem = zod.object({
   orderIndex: zod.number(),
   quiz: zod
     .object({
-      id: zod.number(),
+      id: zod.string(),
       title: zod.string(),
-      lessonId: zod.number(),
+      lessonId: zod.string(),
     })
     .nullish(),
   createdAt: zod.string(),
@@ -405,7 +405,7 @@ export const GetLessonsResponse = zod.array(GetLessonsResponseItem);
  * @summary Create lesson
  */
 export const CreateLessonBody = zod.object({
-  moduleId: zod.number(),
+  moduleId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   videoUrl: zod.string().nullish(),
@@ -417,12 +417,12 @@ export const CreateLessonBody = zod.object({
  * @summary Get lesson by ID
  */
 export const GetLessonByIdParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const GetLessonByIdResponse = zod.object({
-  id: zod.number(),
-  moduleId: zod.number(),
+  id: zod.string(),
+  moduleId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   videoUrl: zod.string().nullish(),
@@ -430,8 +430,8 @@ export const GetLessonByIdResponse = zod.object({
   orderIndex: zod.number(),
   quiz: zod
     .object({
-      id: zod.number(),
-      lessonId: zod.number(),
+      id: zod.string(),
+      lessonId: zod.string(),
       title: zod.string(),
       questions: zod.array(
         zod.object({
@@ -452,7 +452,7 @@ export const GetLessonByIdResponse = zod.object({
  * @summary Update lesson
  */
 export const UpdateLessonParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const UpdateLessonBody = zod.object({
@@ -464,8 +464,8 @@ export const UpdateLessonBody = zod.object({
 });
 
 export const UpdateLessonResponse = zod.object({
-  id: zod.number(),
-  moduleId: zod.number(),
+  id: zod.string(),
+  moduleId: zod.string(),
   title: zod.string(),
   description: zod.string().nullish(),
   videoUrl: zod.string().nullish(),
@@ -473,9 +473,9 @@ export const UpdateLessonResponse = zod.object({
   orderIndex: zod.number(),
   quiz: zod
     .object({
-      id: zod.number(),
+      id: zod.string(),
       title: zod.string(),
-      lessonId: zod.number(),
+      lessonId: zod.string(),
     })
     .nullish(),
   createdAt: zod.string(),
@@ -486,7 +486,7 @@ export const UpdateLessonResponse = zod.object({
  * @summary Delete lesson
  */
 export const DeleteLessonParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const DeleteLessonResponse = zod.object({
@@ -497,12 +497,12 @@ export const DeleteLessonResponse = zod.object({
  * @summary Get quiz for a lesson
  */
 export const GetQuizByLessonQueryParams = zod.object({
-  lessonId: zod.coerce.number(),
+  lessonId: zod.coerce.string(),
 });
 
 export const GetQuizByLessonResponse = zod.object({
-  id: zod.number(),
-  lessonId: zod.number(),
+  id: zod.string(),
+  lessonId: zod.string(),
   title: zod.string(),
   questions: zod.array(
     zod.object({
@@ -519,7 +519,7 @@ export const GetQuizByLessonResponse = zod.object({
  * @summary Create quiz for a lesson
  */
 export const CreateQuizBody = zod.object({
-  lessonId: zod.number(),
+  lessonId: zod.string(),
   title: zod.string().optional(),
   questions: zod.array(
     zod.object({
@@ -534,7 +534,7 @@ export const CreateQuizBody = zod.object({
  * @summary Update quiz
  */
 export const UpdateQuizParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const UpdateQuizBody = zod.object({
@@ -551,8 +551,8 @@ export const UpdateQuizBody = zod.object({
 });
 
 export const UpdateQuizResponse = zod.object({
-  id: zod.number(),
-  lessonId: zod.number(),
+  id: zod.string(),
+  lessonId: zod.string(),
   title: zod.string(),
   questions: zod.array(
     zod.object({
@@ -569,7 +569,7 @@ export const UpdateQuizResponse = zod.object({
  * @summary Delete quiz
  */
 export const DeleteQuizParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const DeleteQuizResponse = zod.object({
@@ -580,15 +580,15 @@ export const DeleteQuizResponse = zod.object({
  * @summary Get all enrollments
  */
 export const GetEnrollmentsQueryParams = zod.object({
-  userId: zod.coerce.number().optional(),
-  courseId: zod.coerce.number().optional(),
+  userId: zod.coerce.string().optional(),
+  courseId: zod.coerce.string().optional(),
   status: zod.enum(["ACTIVE", "COMPLETED", "DROPPED"]).optional(),
 });
 
 export const GetEnrollmentsResponseItem = zod.object({
-  id: zod.number(),
-  userId: zod.number(),
-  courseId: zod.number(),
+  id: zod.string(),
+  userId: zod.string(),
+  courseId: zod.string(),
   status: zod.enum(["ACTIVE", "COMPLETED", "DROPPED"]),
   progress: zod.number(),
   userName: zod.string().nullish(),
@@ -602,15 +602,15 @@ export const GetEnrollmentsResponse = zod.array(GetEnrollmentsResponseItem);
  * @summary Enroll user in course
  */
 export const CreateEnrollmentBody = zod.object({
-  userId: zod.number(),
-  courseId: zod.number(),
+  userId: zod.string(),
+  courseId: zod.string(),
 });
 
 /**
  * @summary Update enrollment status
  */
 export const UpdateEnrollmentStatusParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const UpdateEnrollmentStatusBody = zod.object({
@@ -619,9 +619,9 @@ export const UpdateEnrollmentStatusBody = zod.object({
 });
 
 export const UpdateEnrollmentStatusResponse = zod.object({
-  id: zod.number(),
-  userId: zod.number(),
-  courseId: zod.number(),
+  id: zod.string(),
+  userId: zod.string(),
+  courseId: zod.string(),
   status: zod.enum(["ACTIVE", "COMPLETED", "DROPPED"]),
   progress: zod.number(),
   userName: zod.string().nullish(),
@@ -648,7 +648,7 @@ export const GetDashboardStatsResponse = zod.object({
  * @summary Get recent enrollments
  */
 export const GetRecentEnrollmentsResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   userName: zod.string(),
   courseName: zod.string(),
   status: zod.string(),
@@ -662,7 +662,7 @@ export const GetRecentEnrollmentsResponse = zod.array(
  * @summary Get popular courses
  */
 export const GetPopularCoursesResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   title: zod.string(),
   enrollmentCount: zod.number(),
   trainerName: zod.string().nullish(),

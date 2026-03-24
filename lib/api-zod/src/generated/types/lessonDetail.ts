@@ -8,8 +8,8 @@
 import type { Quiz } from "./quiz";
 
 export interface LessonDetail {
-  id: number;
-  moduleId: number;
+  id: string;
+  moduleId: string;
   title: string;
   description?: string | null;
   videoUrl?: string | null;

@@ -7,7 +7,7 @@
  */
 
 export interface CreateLessonRequest {
-  moduleId: number;
+  moduleId: string;
   title: string;
   description?: string | null;
   videoUrl?: string | null;

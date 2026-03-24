@@ -7,7 +7,7 @@
  */
 
 export interface QuizSummary {
-  id: number;
+  id: string;
   title: string;
-  lessonId: number;
+  lessonId: string;
 }

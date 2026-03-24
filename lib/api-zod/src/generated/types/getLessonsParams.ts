@@ -7,5 +7,5 @@
  */
 
 export type GetLessonsParams = {
-  moduleId: number;
+  moduleId: string;
 };

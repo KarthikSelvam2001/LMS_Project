@@ -12,13 +12,15 @@ import CourseDetail from "./pages/course-detail";
 import Enrollments from "./pages/enrollments";
 import Categories from "./pages/categories";
 import Login from "./pages/login";
+import MyCertificates from "./pages/my-certificates";
+import Profile from "./pages/profile";
 import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
+      staleTime: 30 * 1000,
       retry: 1,
     },
   },
@@ -74,6 +76,8 @@ function Router() {
       <Route path="/courses" component={() => <ProtectedRoute component={Courses} />} />
       <Route path="/courses/:id" component={() => <ProtectedRoute component={CourseDetail} />} />
       <Route path="/enrollments" component={() => <ProtectedRoute component={Enrollments} />} />
+      <Route path="/my-certificates" component={() => <ProtectedRoute component={MyCertificates} />} />
+      <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
       <Route path="/categories" component={() => <ProtectedRoute component={Categories} />} />
       <Route component={NotFound} />
     </Switch>

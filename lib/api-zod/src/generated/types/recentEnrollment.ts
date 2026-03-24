@@ -7,7 +7,7 @@
  */
 
 export interface RecentEnrollment {
-  id: number;
+  id: string;
   userName: string;
   courseName: string;
   status: string;

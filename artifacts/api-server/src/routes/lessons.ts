@@ -1,93 +1,94 @@
-import { Router, type IRouter } from "express";
-import { db, lessonsTable, quizzesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { Router, type Response } from "express";
+import { Lesson, Quiz, mongoose } from "@workspace/db";
+import { AuthRequest, authorize } from "../middlewares/auth";
 
-const router: IRouter = Router();
+const router = Router();
 
-function fmt(l: typeof lessonsTable.$inferSelect) {
-  return { ...l, createdAt: l.createdAt.toISOString(), updatedAt: l.updatedAt.toISOString() };
+function fmt(l: any) {
+  return { ...l.toObject(), id: l._id };
 }
 
-router.get("/lessons", async (req, res) => {
+router.get("/lessons", async (req: AuthRequest, res: Response) => {
   try {
     const { moduleId } = req.query as Record<string, string>;
     if (!moduleId) return res.status(400).json({ message: "moduleId required" });
 
-    const lessons = await db.select().from(lessonsTable)
-      .where(eq(lessonsTable.moduleId, parseInt(moduleId)))
-      .orderBy(lessonsTable.orderIndex);
+    console.log("[lessons] GET /lessons moduleId:", moduleId);
+
+    const lessons = await Lesson.find({ moduleId: new mongoose.Types.ObjectId(moduleId), isDeleted: { $ne: true } }).sort({ orderIndex: 1 });
+
+    console.log("[lessons] found:", lessons.length);
 
     const withQuiz = await Promise.all(
       lessons.map(async (l) => {
-        const [quiz] = await db.select({ id: quizzesTable.id, title: quizzesTable.title })
-          .from(quizzesTable).where(eq(quizzesTable.lessonId, l.id));
+        const quiz = await Quiz.findOne({ lessonId: l._id }).select("title");
         return { ...fmt(l), quiz: quiz ?? null };
       })
     );
 
-    res.json(withQuiz);
+    return res.json(withQuiz);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch lessons" });
+    console.error("[lessons] error:", err);
+    return res.status(500).json({ message: "Failed to fetch lessons" });
   }
 });
 
-router.post("/lessons", async (req, res) => {
+router.post("/lessons", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
     const { moduleId, title, description, videoUrl, duration, orderIndex = 0 } = req.body;
     if (!moduleId || !title) return res.status(400).json({ message: "moduleId and title required" });
 
-    const [l] = await db.insert(lessonsTable).values({
-      moduleId: parseInt(moduleId),
+    const l = await Lesson.create({
+      moduleId,
       title,
       description,
       videoUrl,
       duration,
       orderIndex,
-    }).returning();
+    });
 
-    res.status(201).json({ ...fmt(l), quiz: null });
+    return res.status(201).json({ ...fmt(l), quiz: null });
   } catch (err) {
-    res.status(500).json({ message: "Failed to create lesson" });
+    return res.status(500).json({ message: "Failed to create lesson" });
   }
 });
 
-router.get("/lessons/:id", async (req, res) => {
+router.get("/lessons/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    const [l] = await db.select().from(lessonsTable).where(eq(lessonsTable.id, id));
+    const l = await Lesson.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
     if (!l) return res.status(404).json({ message: "Lesson not found" });
 
-    const [quiz] = await db.select().from(quizzesTable).where(eq(quizzesTable.lessonId, id));
-    res.json({ ...fmt(l), quiz: quiz ? { ...quiz, createdAt: quiz.createdAt.toISOString(), updatedAt: quiz.updatedAt.toISOString() } : null });
+    const quiz = await Quiz.findOne({ lessonId: l._id });
+    return res.json({ ...fmt(l), quiz });
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch lesson" });
+    return res.status(500).json({ message: "Failed to fetch lesson" });
   }
 });
 
-router.put("/lessons/:id", async (req, res) => {
+router.put("/lessons/:id", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
     const { title, description, videoUrl, duration, orderIndex } = req.body;
 
-    const [l] = await db.update(lessonsTable)
-      .set({ title, description, videoUrl, duration, orderIndex, updatedAt: new Date() })
-      .where(eq(lessonsTable.id, id))
-      .returning();
+    const l = await Lesson.findByIdAndUpdate(
+      req.params.id,
+      { title, description, videoUrl, duration, orderIndex },
+      { new: true }
+    );
 
     if (!l) return res.status(404).json({ message: "Lesson not found" });
-    res.json(fmt(l));
+    return res.json(fmt(l));
   } catch (err) {
-    res.status(500).json({ message: "Failed to update lesson" });
+    return res.status(500).json({ message: "Failed to update lesson" });
   }
 });
 
-router.delete("/lessons/:id", async (req, res) => {
+router.delete("/lessons/:id", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    await db.delete(lessonsTable).where(eq(lessonsTable.id, id));
-    res.json({ message: "Lesson deleted successfully" });
+    const l = await Lesson.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    if (!l) return res.status(404).json({ message: "Lesson not found" });
+    return res.json({ message: "Lesson deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete lesson" });
+    return res.status(500).json({ message: "Failed to delete lesson" });
   }
 });
 

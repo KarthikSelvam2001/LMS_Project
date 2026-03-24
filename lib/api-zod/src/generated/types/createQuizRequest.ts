@@ -8,7 +8,7 @@
 import type { QuizQuestion } from "./quizQuestion";
 
 export interface CreateQuizRequest {
-  lessonId: number;
+  lessonId: string;
   title?: string;
   questions: QuizQuestion[];
 }

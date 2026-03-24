@@ -7,5 +7,5 @@
  */
 
 export type GetModulesParams = {
-  courseId: number;
+  courseId: string;
 };

@@ -1,0 +1,35 @@
+services:
+  # Backend API Server
+  - type: web
+    name: lms-api-server
+    env: node
+    plan: free
+    rootDir: artifacts/api-server
+    buildCommand: pnpm install && pnpm run build
+    startCommand: pnpm run dev # Or a production start script if available
+    envVars:
+      - key: PORT
+        value: 5001
+      - key: MONGODB_URI
+        fromDatabase:
+          name: lms-mongodb
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+
+  # Frontend Application
+  - type: web
+    name: lms-frontend
+    env: static
+    plan: free
+    rootDir: artifacts/lms-frontend
+    buildCommand: pnpm install && pnpm run build
+    publishDir: dist/public
+    envVars:
+      - key: VITE_API_URL
+        value: https://lms-api-server.onrender.com/api # Replace with your actual backend URL
+
+databases:
+  - name: lms-mongodb
+    type: mongodb
+    plan: free

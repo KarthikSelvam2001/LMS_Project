@@ -9,15 +9,15 @@ import type { CourseLevel } from "./courseLevel";
 import type { CourseStatus } from "./courseStatus";
 
 export interface Course {
-  id: number;
+  id: string;
   title: string;
   description?: string | null;
   thumbnail?: string | null;
   status: CourseStatus;
   level: CourseLevel;
   price?: number | null;
-  categoryId?: number | null;
-  trainerId?: number | null;
+  categoryId?: string | null;
+  trainerId?: string | null;
   categoryName?: string | null;
   trainerName?: string | null;
   enrollmentCount: number;

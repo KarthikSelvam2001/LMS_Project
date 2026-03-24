@@ -19,7 +19,7 @@ export interface LoginRequest {
 }
 
 export interface AuthUser {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   fullName: string;
@@ -44,7 +44,7 @@ export interface MessageResponse {
 }
 
 export interface User {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   fullName: string;
@@ -86,7 +86,7 @@ export interface ChangeRoleRequest {
 }
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   description?: string | null;
   color?: string | null;
@@ -116,15 +116,15 @@ export const CourseLevel = {
 } as const;
 
 export interface Course {
-  id: number;
+  id: string;
   title: string;
   description?: string | null;
   thumbnail?: string | null;
   status: CourseStatus;
   level: CourseLevel;
   price?: number | null;
-  categoryId?: number | null;
-  trainerId?: number | null;
+  categoryId?: string | null;
+  trainerId?: string | null;
   categoryName?: string | null;
   trainerName?: string | null;
   enrollmentCount: number;
@@ -134,8 +134,8 @@ export interface Course {
 }
 
 export interface Module {
-  id: number;
-  courseId: number;
+  id: string;
+  courseId: string;
   title: string;
   description?: string | null;
   orderIndex: number;
@@ -145,7 +145,7 @@ export interface Module {
 }
 
 export interface CreateModuleRequest {
-  courseId: number;
+  courseId: string;
   title: string;
   description?: string | null;
   orderIndex?: number;
@@ -176,15 +176,15 @@ export const CourseDetailLevel = {
 } as const;
 
 export interface CourseDetail {
-  id: number;
+  id: string;
   title: string;
   description?: string | null;
   thumbnail?: string | null;
   status: CourseDetailStatus;
   level: CourseDetailLevel;
   price?: number | null;
-  categoryId?: number | null;
-  trainerId?: number | null;
+  categoryId?: string | null;
+  trainerId?: string | null;
   categoryName?: string | null;
   trainerName?: string | null;
   enrollmentCount: number;
@@ -195,14 +195,14 @@ export interface CourseDetail {
 }
 
 export interface QuizSummary {
-  id: number;
+  id: string;
   title: string;
-  lessonId: number;
+  lessonId: string;
 }
 
 export interface Lesson {
-  id: number;
-  moduleId: number;
+  id: string;
+  moduleId: string;
   title: string;
   description?: string | null;
   videoUrl?: string | null;
@@ -220,8 +220,8 @@ export interface QuizQuestion {
 }
 
 export interface Quiz {
-  id: number;
-  lessonId: number;
+  id: string;
+  lessonId: string;
   title: string;
   questions: QuizQuestion[];
   createdAt: string;
@@ -229,8 +229,8 @@ export interface Quiz {
 }
 
 export interface LessonDetail {
-  id: number;
-  moduleId: number;
+  id: string;
+  moduleId: string;
   title: string;
   description?: string | null;
   videoUrl?: string | null;
@@ -242,7 +242,7 @@ export interface LessonDetail {
 }
 
 export interface CreateLessonRequest {
-  moduleId: number;
+  moduleId: string;
   title: string;
   description?: string | null;
   videoUrl?: string | null;
@@ -259,7 +259,7 @@ export interface UpdateLessonRequest {
 }
 
 export interface CreateQuizRequest {
-  lessonId: number;
+  lessonId: string;
   title?: string;
   questions: QuizQuestion[];
 }
@@ -279,9 +279,9 @@ export const EnrollmentStatus = {
 } as const;
 
 export interface Enrollment {
-  id: number;
-  userId: number;
-  courseId: number;
+  id: string;
+  userId: string;
+  courseId: string;
   status: EnrollmentStatus;
   progress: number;
   userName?: string | null;
@@ -291,8 +291,8 @@ export interface Enrollment {
 }
 
 export interface CreateEnrollmentRequest {
-  userId: number;
-  courseId: number;
+  userId: string;
+  courseId: string;
 }
 
 export type UpdateEnrollmentRequestStatus =
@@ -318,21 +318,49 @@ export interface DashboardStats {
   activeEnrollments: number;
   completedEnrollments: number;
   publishedCourses: number;
+  totalModules?: number;
+  totalLessons?: number;
+  averageRating?: string;
+  enrolledCourses?: number;
+  completedCourses?: number;
+  inProgressCourses?: number;
+  totalStudents?: number;
+  points?: number;
+  myCourses?: number;
+  pointsEarned?: number;
 }
 
 export interface RecentEnrollment {
-  id: number;
+  id: string;
   userName: string;
-  courseName: string;
+  courseTitle: string;
   status: string;
   enrolledAt: string;
 }
 
 export interface PopularCourse {
-  id: number;
+  id: string;
   title: string;
   enrollmentCount: number;
   trainerName?: string | null;
+  level?: string;
+  categoryName?: string;
+}
+
+export interface LessonProgress {
+  id: string;
+  userId: string;
+  courseId: string;
+  lessonId: string;
+  isWatched: boolean;
+  isQuizPassed: boolean;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+}
+
+export interface CourseProgressSummary {
+  completedLessons: number;
+  totalLessons: number;
+  completionPercentage: number;
 }
 
 export type GetUsersParams = {
@@ -344,10 +372,11 @@ export type GetUsersParams = {
 
 export type GetCoursesParams = {
   search?: string;
-  categoryId?: number;
+  categoryId?: string;
   status?: GetCoursesStatus;
   level?: GetCoursesLevel;
-  trainerId?: number;
+  trainerId?: string;
+  enrolledOnly?: string;
   page?: number;
   limit?: number;
 };
@@ -371,20 +400,20 @@ export const GetCoursesLevel = {
 } as const;
 
 export type GetModulesParams = {
-  courseId: number;
+  courseId: string;
 };
 
 export type GetLessonsParams = {
-  moduleId: number;
+  moduleId: string;
 };
 
 export type GetQuizByLessonParams = {
-  lessonId: number;
+  lessonId: string;
 };
 
 export type GetEnrollmentsParams = {
-  userId?: number;
-  courseId?: number;
+  userId?: string;
+  courseId?: string;
   status?: GetEnrollmentsStatus;
 };
 

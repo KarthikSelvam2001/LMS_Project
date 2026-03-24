@@ -7,7 +7,7 @@
  */
 
 export interface CreateModuleRequest {
-  courseId: number;
+  courseId: string;
   title: string;
   description?: string | null;
   orderIndex?: number;

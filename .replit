@@ -30,13 +30,13 @@ args = "LMS Frontend"
 name = "LMS Frontend"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/lms-frontend run dev"
-waitForPort = 18628
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=18628 BASE_PATH=/ pnpm --filter @workspace/lms-frontend run dev"
+waitForPort = 18628
 
 [agent]
 stack = "PNPM_WORKSPACE"

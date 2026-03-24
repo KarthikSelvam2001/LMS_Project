@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { LayoutDashboard, Users, BookOpen, GraduationCap, Library, Bell, LogOut, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, GraduationCap, Library, LogOut, Award } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,21 +24,42 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/auth-context";
 
-const navigation = [
+type NavItem = { title: string; url: string; icon: React.ElementType };
+
+const adminNav: NavItem[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Users", url: "/users", icon: Users },
+  { title: "User Management", url: "/users", icon: Users },
   { title: "Courses", url: "/courses", icon: BookOpen },
   { title: "Enrollments", url: "/enrollments", icon: GraduationCap },
   { title: "Categories", url: "/categories", icon: Library },
 ];
 
+const trainerNav: NavItem[] = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "My Courses", url: "/courses", icon: BookOpen },
+  { title: "Enrollments", url: "/enrollments", icon: GraduationCap },
+];
+
+const learnerNav: NavItem[] = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Courses", url: "/courses", icon: BookOpen },
+  { title: "My Enrollments", url: "/enrollments", icon: GraduationCap },
+  { title: "My Certificates", url: "/my-certificates", icon: Award },
+];
+
 const roleColors: Record<string, string> = {
   ADMIN: "bg-red-100 text-red-700",
-  INSTRUCTOR: "bg-blue-100 text-blue-700",
-  STUDENT: "bg-green-100 text-green-700",
+  TRAINER: "bg-blue-100 text-blue-700",
+  LEARNER: "bg-green-100 text-green-700",
+};
+
+const roleLabels: Record<string, string> = {
+  ADMIN: "Admin",
+  TRAINER: "Trainer",
+  LEARNER: "Learner",
 };
 
 function getInitials(name: string) {
@@ -52,14 +73,21 @@ function getInitials(name: string) {
 
 export function AppSidebar() {
   const [location, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const navigation =
+    user?.roleId === "ADMIN"
+      ? adminNav
+      : user?.roleId === "TRAINER"
+      ? trainerNav
+      : learnerNav;
 
   return (
     <Sidebar className="border-r border-border/50">
       <SidebarHeader className="p-6 pb-2">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-sm border border-border p-0.5 bg-background">
+            <img src="/logo.jpg" alt="LMS Logo" className="w-full h-full object-cover rounded-lg" />
           </div>
           <h2 className="font-bold text-xl tracking-tight text-foreground">
             LMS Portal
@@ -69,20 +97,22 @@ export function AppSidebar() {
       <SidebarContent className="px-3">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-            Management
+            Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {navigation.map((item) => {
-                const isActive = location === item.url || (item.url !== "/" && location.startsWith(item.url));
+                const isActive =
+                  location === item.url ||
+                  (item.url !== "/" && location.startsWith(item.url));
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      data-active={isActive}
                       onClick={() => setLocation(item.url)}
-                      className="font-medium h-10 px-3 transition-all data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                      isActive={isActive}
+                      className="w-full justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all"
                     >
-                      <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                      <item.icon className="w-4 h-4 shrink-0" />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -93,20 +123,60 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* User info at bottom of sidebar */}
       {user && (
-        <div className="p-4 border-t border-border/50 mt-auto">
-          <div className="flex items-center gap-3 px-2 py-2">
-            <Avatar className="w-8 h-8 shrink-0">
-              <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-            </div>
-          </div>
+        <div className="p-4 border-t border-border/50">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 h-auto py-2 px-2 rounded-lg hover:bg-accent"
+              >
+                <Avatar className="w-8 h-8">
+                  {user.picture && (
+                    <AvatarImage src={user.picture} alt={user.fullName} referrerPolicy="no-referrer" />
+                  )}
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                    {getInitials(user.fullName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-start min-w-0">
+                  <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">
+                    {user.fullName}
+                  </span>
+                  <Badge
+                    className={`text-[10px] px-1.5 py-0 font-medium mt-0.5 ${
+                      roleColors[user.roleId] ?? ""
+                    }`}
+                    variant="outline"
+                  >
+                    {roleLabels[user.roleId] ?? user.roleId}
+                  </Badge>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuLabel className="text-xs text-muted-foreground p-3">
+                <p className="font-bold text-foreground">{user.fullName}</p>
+                <p className="text-[10px] mt-0.5">{user.email}</p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setLocation("/profile")}
+                className="cursor-pointer"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="text-red-600 cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </Sidebar>
@@ -114,98 +184,16 @@ export function AppSidebar() {
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
-  const [, setLocation] = useLocation();
-
-  const handleLogout = async () => {
-    await logout();
-    setLocation("/login");
-  };
-
-  const style = {
-    "--sidebar-width": "16rem",
-    "--sidebar-width-icon": "4rem",
-  } as React.CSSProperties;
-
   return (
-    <SidebarProvider style={style}>
-      <div className="flex min-h-screen w-full bg-background text-foreground selection:bg-primary/20">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-col flex-1 min-w-0">
-          <header className="h-16 flex items-center justify-between px-6 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 sticky top-0">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-            </div>
-            <div className="flex items-center gap-3">
-              <Button size="icon" variant="ghost" className="text-muted-foreground rounded-full h-9 w-9">
-                <Bell className="w-5 h-5" />
-              </Button>
-              <div className="w-px h-6 bg-border mx-1" />
-
-              {user && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 px-2 h-10 rounded-lg hover:bg-muted">
-                      <Avatar className="w-7 h-7">
-                        <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                          {getInitials(user.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="text-left hidden sm:block">
-                        <p className="text-sm font-medium leading-none">{user.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
-                      </div>
-                      <span className={`hidden sm:inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ml-1 ${roleColors[user.role] || "bg-gray-100 text-gray-700"}`}>
-                        {user.role}
-                      </span>
-                      <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-60">
-                    <DropdownMenuLabel className="pb-2">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-9 h-9">
-                          <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-                            {getInitials(user.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-sm truncate">{user.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                          <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full mt-1 ${roleColors[user.role] || "bg-gray-100 text-gray-700"}`}>
-                            {user.role}
-                          </span>
-                        </div>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-xs text-muted-foreground cursor-default">
-                      <span className="font-medium">Enrollments:</span>&nbsp;{user.enrollmentCount}
-                    </DropdownMenuItem>
-                    {user.role === "INSTRUCTOR" && (
-                      <DropdownMenuItem className="text-xs text-muted-foreground cursor-default">
-                        <span className="font-medium">Courses:</span>&nbsp;{user.courseCount}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          </header>
-          <main className="flex-1 p-6 lg:p-8 overflow-y-auto animate-in fade-in duration-500">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
-          </main>
-        </div>
+        <main className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-10">
+            <SidebarTrigger className="-ml-1" />
+          </div>
+          <div className="flex-1 px-6 py-6">{children}</div>
+        </main>
       </div>
     </SidebarProvider>
   );

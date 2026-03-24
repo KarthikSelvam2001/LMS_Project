@@ -1,50 +1,105 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/auth-context";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Eye, EyeOff, BookOpen, Users, Award, AlertCircle } from "lucide-react";
+import { BookOpen, Users, Award, Sparkles } from "lucide-react";
 
-const demoCredentials = [
-  {
-    role: "Admin",
-    email: "alice@lms.com",
-    password: "Admin@123",
-    color: "bg-red-100 text-red-700 border-red-200",
-    badgeClass: "bg-red-100 text-red-700",
-    icon: "🛡️",
-  },
-  {
-    role: "Instructor",
-    email: "bob@lms.com",
-    password: "Trainer@123",
-    color: "bg-blue-100 text-blue-700 border-blue-200",
-    badgeClass: "bg-blue-100 text-blue-700",
-    icon: "📚",
-  },
-  {
-    role: "Student",
-    email: "eva@lms.com",
-    password: "Learner@123",
-    color: "bg-green-100 text-green-700 border-green-200",
-    badgeClass: "bg-green-100 text-green-700",
-    icon: "🎓",
-  },
-];
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+const GOOGLE_CLIENT_ID =
+  "685512374164-703ql8tr6ql5ipg8kb204f9qpjsjroun.apps.googleusercontent.com";
 
 export default function Login() {
-  const { login } = useAuth();
-  const [, setLocation] = useLocation();
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { loginWithGoogle, login } = useAuth();
+  const [, setLocation] = useLocation();
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const scriptLoaded = useRef(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (scriptLoaded.current) return;
+    scriptLoaded.current = true;
+
+    const initGoogle = () => {
+      if (!window.google) return;
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        use_fedcm_for_prompt: false, // CRITICAL: Fixes AbortError when FedCM is not fully enabled/supported
+        error_callback: (err: any) => {
+          console.error("Google GIS error_callback:", err);
+          if (err.type === "display_error") {
+            setError("Google One Tap could not be displayed. Please use the button below.");
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      // Render the official Google button (Visible now!)
+      if (googleBtnRef.current) {
+        window.google.accounts.id.renderButton(googleBtnRef.current, {
+          type: "standard",
+          shape: "rectangular",
+          theme: "filled_blue",
+          size: "large",
+          width: 320,
+          logo_alignment: "left"
+        });
+      }
+      
+      // Attempt One Tap prompt (if allowed by browser policy)
+      window.google.accounts.id.prompt();
+    };
+
+    const existingScript = document.getElementById("google-gis-script");
+    if (existingScript) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "google-gis-script";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.head.appendChild(script);
+  }, []);
+
+  const handleCredentialResponse = async (response: any) => {
+    console.log("Google GIS response received");
+    setError("");
+    setIsLoading(true);
+    try {
+      if (!response.credential) {
+        throw new Error("Login cancelled or failed at Google.");
+      }
+      await loginWithGoogle(response.credential);
+      setLocation("/");
+    } catch (err: any) {
+      console.error("Login with Google error:", err);
+      setError(err.message || "Google sign-in failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    // We already have the official button rendered, but we can also trigger the prompt manually
+    if (window.google) {
+      window.google.accounts.id.prompt();
+    }
+  };
+
+  const handleTraditionalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
@@ -52,193 +107,216 @@ export default function Login() {
       await login(email, password);
       setLocation("/");
     } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.");
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fillCredentials = (cred: typeof demoCredentials[0]) => {
-    setEmail(cred.email);
-    setPassword(cred.password);
-    setError("");
-  };
+  const stats = [
+    { icon: <Users className="w-5 h-5" />, label: "Multi-Role", sub: "Admin · Trainer · Learner" },
+    { icon: <BookOpen className="w-5 h-5" />, label: "Courses", sub: "Published & tracked" },
+    { icon: <Award className="w-5 h-5" />, label: "Certificates", sub: "Auto-generated PDF" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+      }}
+    >
+      {/* Animated blobs */}
+      <div
+        className="absolute top-[-120px] left-[-120px] w-[420px] h-[420px] rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, #6366f1, transparent)" }}
+      />
+      <div
+        className="absolute bottom-[-100px] right-[-100px] w-[360px] h-[360px] rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }}
+      />
 
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
         {/* Left: Branding */}
         <div className="text-white space-y-8 hidden lg:block">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <GraduationCap className="w-7 h-7 text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-white/10 p-1 bg-white/5">
+              <img src="/logo.jpg" alt="LMS Logo" className="w-full h-full object-cover rounded-xl" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">LMS Portal</h1>
-              <p className="text-slate-400 text-sm">Learning Management System</p>
+              <h1 className="text-2xl font-bold tracking-tight">LMS Portal</h1>
+              <p className="text-indigo-300 text-sm">Learning Management System</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-4xl font-bold leading-tight">
-              Manage Learning,<br />
-              <span className="text-primary">Empower Growth</span>
-            </h2>
-            <p className="text-slate-400 text-lg leading-relaxed">
-              A complete LMS platform for admins, instructors, and students to create, manage, and track learning journeys.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { icon: <Users className="w-5 h-5" />, label: "12 Users", sub: "Across all roles" },
-              { icon: <BookOpen className="w-5 h-5" />, label: "12 Courses", sub: "Published & draft" },
-              { icon: <Award className="w-5 h-5" />, label: "18 Enrollments", sub: "Active learning" },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                <div className="text-primary mb-2 flex justify-center">{stat.icon}</div>
-                <div className="font-bold">{stat.label}</div>
-                <div className="text-slate-400 text-xs">{stat.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Demo credentials */}
           <div className="space-y-3">
-            <p className="text-slate-400 text-sm font-medium uppercase tracking-wide">Demo Credentials</p>
-            {demoCredentials.map((cred) => (
-              <button
-                key={cred.role}
-                onClick={() => fillCredentials(cred)}
-                className="w-full text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl p-3 transition-all group"
+            <div className="flex items-center gap-2 text-indigo-400 text-sm font-medium">
+              <Sparkles className="w-4 h-4" />
+              <span>Premium Learning Platform</span>
+            </div>
+            <h2 className="text-5xl font-extrabold leading-tight tracking-tight">
+              Learn Without
+              <br />
+              <span
+                style={{
+                  background: "linear-gradient(90deg, #a78bfa, #6366f1)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{cred.icon}</span>
-                    <div>
-                      <div className="font-medium text-sm">{cred.role}</div>
-                      <div className="text-slate-400 text-xs">{cred.email}</div>
-                    </div>
-                  </div>
-                  <div className="text-xs text-slate-500 font-mono bg-white/5 px-2 py-1 rounded">
-                    {cred.password}
-                  </div>
-                </div>
-              </button>
+                Limits.
+              </span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {stats.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-2xl p-4 text-center"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              >
+                <div className="text-indigo-400 mb-2 flex justify-center">{s.icon}</div>
+                <div className="font-bold text-sm">{s.label}</div>
+                <div className="text-slate-400 text-xs mt-0.5">{s.sub}</div>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Right: Login Form */}
+        {/* Right: Login Card */}
         <div className="w-full">
-          <Card className="shadow-2xl border-0 bg-white dark:bg-slate-900">
-            <CardHeader className="space-y-1 pb-6">
-              <div className="flex items-center gap-2 mb-2 lg:hidden">
-                <GraduationCap className="w-6 h-6 text-primary" />
-                <span className="text-lg font-bold">LMS Portal</span>
+          <div
+            className="rounded-3xl p-8 shadow-2xl"
+            style={{
+              background: "rgba(255, 255, 255, 0.07)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+            }}
+          >
+            {/* Header */}
+            <div className="space-y-2 mb-10 text-center">
+              <h2 className="text-white text-3xl font-extrabold tracking-tight">
+                LMS Access 🚀
+              </h2>
+              <p className="text-slate-300 text-base">
+                {showEmailLogin ? "Sign in with your credentials" : "Continue with Google to enter"}
+              </p>
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <div
+                className="mb-8 flex flex-col items-start gap-1 rounded-xl p-4 text-sm animate-in fade-in slide-in-from-top-4 duration-300"
+                style={{ background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}
+              >
+                <div className="flex items-center gap-2 font-bold mb-1 text-red-400">
+                  <span>⚠</span>
+                  <span>Authentication Notice</span>
+                </div>
+                <span>{error}</span>
               </div>
-              <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-              <CardDescription className="text-base">
-                Sign in to access your LMS dashboard
-              </CardDescription>
-            </CardHeader>
+            )}
 
-            <CardContent className="space-y-5">
-              {error && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {/* Quick login buttons */}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Quick Login — click to fill</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {demoCredentials.map((cred) => (
-                    <button
-                      key={cred.role}
-                      type="button"
-                      onClick={() => fillCredentials(cred)}
-                      className={`border rounded-lg p-2.5 text-left transition-all hover:scale-[1.02] hover:shadow-sm active:scale-95 ${cred.color}`}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-base leading-none">{cred.icon}</span>
-                        <span className="text-xs font-bold">{cred.role}</span>
-                      </div>
-                      <div className="text-[10px] font-mono opacity-80 truncate">{cred.email}</div>
-                      <div className="text-[10px] font-mono opacity-70">{cred.password}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-900 px-2 text-muted-foreground">or enter manually</span>
+            {!showEmailLogin ? (
+              <div className="flex flex-col items-center space-y-8 py-8">
+                {/* Official Google Button Container */}
+                <div className="relative group">
+                   <div 
+                     ref={googleBtnRef} 
+                     className="min-h-[50px] min-w-[320px] transition-transform hover:scale-[1.02]"
+                   />
+                   {isLoading && (
+                     <div className="absolute inset-0 bg-black/40 rounded flex items-center justify-center">
+                        <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                     </div>
+                   )}
                 </div>
               </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="alice@lms.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="h-11"
-                    autoComplete="email"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+            ) : (
+              <div className="space-y-6">
+                <form onSubmit={handleTraditionalLogin} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="e.g. admin1@lms.com"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 px-5 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Password</label>
+                    <input
+                      type="password"
+                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="h-11 pr-10"
-                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 px-5 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full rounded-2xl py-4 font-bold text-white transition-all duration-200 mt-2 hover:brightness-110 disabled:opacity-60 shadow-lg"
+                    style={{
+                      background: "linear-gradient(90deg, #6366f1, #8b5cf6)",
+                      boxShadow: "0 4px 20px rgba(99,102,241,0.3)"
+                    }}
+                  >
+                    {isLoading ? "Signing in..." : "Log In"}
+                  </button>
+                </form>
+
+                {/* Quick Demo Section (Inside Manual) */}
+                <div className="pt-6 border-t border-white/10">
+                  <p className="text-[10px] uppercase font-bold text-indigo-400 mb-4 tracking-widest text-center">Quick Demo Accounts</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { role: "Admin", email: "admin1@lms.com", pass: "Admin@123" },
+                      { role: "Trainer", email: "david@lms.com", pass: "Trainer@123" },
+                      { role: "Learner", email: "olivia@lms.com", pass: "Learner@123" }
+                    ].map(u => (
+                      <button
+                        key={u.role}
+                        type="button"
+                        onClick={() => { setEmail(u.email); setPassword(u.pass); }}
+                        className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 px-1 text-[10px] font-bold text-slate-300 transition-all active:scale-95"
+                      >
+                        {u.role}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full h-11 text-base font-semibold"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Signing in...
-                    </span>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-            <CardFooter />
-          </Card>
+                <div className="text-center pt-2">
+                  <button
+                    onClick={() => { setShowEmailLogin(false); setError(""); }}
+                    className="text-xs font-bold text-slate-400 hover:text-white uppercase tracking-widest transition-colors"
+                  >
+                    ← Back to Google SSO
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-10 flex justify-center items-center gap-6 opacity-40">
+              {[
+                { icon: "🔒", text: "Encrypted" },
+                { icon: "🛡️", text: "Secure" },
+                { icon: "☁️", text: "Verified" },
+              ].map((item) => (
+                <div key={item.text} className="flex items-center gap-1.5">
+                  <span className="text-xs">{item.icon}</span>
+                  <span className="text-[10px] text-white font-medium uppercase tracking-tight">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

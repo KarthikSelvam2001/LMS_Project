@@ -8,8 +8,8 @@
 import type { QuizQuestion } from "./quizQuestion";
 
 export interface Quiz {
-  id: number;
-  lessonId: number;
+  id: string;
+  lessonId: string;
   title: string;
   questions: QuizQuestion[];
   createdAt: string;

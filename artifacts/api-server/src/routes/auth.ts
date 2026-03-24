@@ -1,46 +1,156 @@
-import { Router, type IRouter } from "express";
-import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { Router, type IRouter, type Request, type Response } from "express";
+import { User } from "@workspace/db";
 
 const router: IRouter = Router();
 
-function formatUser(user: typeof usersTable.$inferSelect) {
+const GOOGLE_CLIENT_ID = "685512374164-703ql8tr6ql5ipg8kb204f9qpjsjroun.apps.googleusercontent.com";
+const DEFAULT_PASSWORD = "LMS@2026";
+
+function formatUser(user: any) {
   return {
-    id: user.id,
+    id: user.id || user._id,
     firstName: user.firstName,
     lastName: user.lastName,
     fullName: `${user.firstName} ${user.lastName}`,
     email: user.email,
     roleId: user.roleId,
+    picture: user.picture || "",
+    provider: user.provider || "local",
     isActive: user.isActive,
-    createdAt: user.createdAt.toISOString(),
-    updatedAt: user.updatedAt.toISOString(),
+    isDeleted: user.isDeleted,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 }
 
-router.post("/auth/login", async (req, res) => {
+function setUserCookie(res: Response, user: any) {
+  const sessionData = { id: user.id || user._id };
+  res.cookie("lms_user", JSON.stringify(sessionData), {
+    httpOnly: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: "lax",
+    path: "/",
+  });
+  return formatUser(user);
+}
+
+// --- Google SSO Login/Signup ---
+router.post("/auth/google", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token } = req.body;
+    console.log("Received Google auth request, token length:", token?.length);
+    if (!token) {
+      res.status(400).json({ message: "Google token is required" });
+      return;
+    }
+
+    // Verify token with Google's public tokeninfo endpoint
+    const googleRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
+    );
+
+    if (!googleRes.ok) {
+      const errorText = await googleRes.text();
+      console.error("Google tokeninfo error:", googleRes.status, errorText);
+      res.status(401).json({ message: "Invalid Google token" });
+      return;
+    }
+
+    const payload: any = await googleRes.json();
+    console.log("Google token payload:", JSON.stringify(payload, null, 2));
+
+    // Validate token is for our app
+    if (payload.aud !== GOOGLE_CLIENT_ID) {
+      console.error("Token audience mismatch:", payload.aud, "expected:", GOOGLE_CLIENT_ID);
+      res.status(401).json({ message: "Token audience mismatch" });
+      return;
+    }
+
+    const { email, given_name, family_name, name, picture } = payload;
+
+    if (!email) {
+      res.status(400).json({ message: "Email not provided by Google" });
+      return;
+    }
+
+    // Find or create user — no duplicates
+    let user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    if (user) {
+      // Existing user: update picture if changed
+      if (picture && user.picture !== picture) {
+        user.picture = picture;
+        await user.save();
+      }
+    } else {
+      // New user: auto-signup with default role LEARNER
+      const nameParts = name ? name.split(" ") : [];
+      const firstName = given_name || nameParts[0] || email.split("@")[0];
+      const lastName = (family_name || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "")) || ".";
+
+      user = new User({
+        firstName,
+        lastName,
+        email: email.toLowerCase().trim(),
+        password: DEFAULT_PASSWORD,
+        provider: "google",
+        picture: picture || "",
+        roleId: "LEARNER",
+        isActive: true,
+        isDeleted: false,
+        createdBy: "GOOGLE_SSO",
+        updatedBy: "GOOGLE_SSO",
+      });
+
+      await user.save();
+    }
+
+    if (user.isDeleted) {
+      res.status(401).json({ message: "Account not found" });
+      return;
+    }
+    if (!user.isActive) {
+      res.status(401).json({ message: "Account is deactivated" });
+      return;
+    }
+
+    const userData = setUserCookie(res, user);
+    res.json({ user: userData, message: "Login successful" });
+  } catch (err) {
+    console.error("Google auth error:", err);
+    res.status(500).json({ message: "Google authentication failed" });
+  }
+});
+
+// --- Traditional Login (kept for compatibility) ---
+router.post("/auth/login", async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      res.status(400).json({ message: "Email and password are required" });
+      return;
     }
 
-    const [user] = await db.select().from(usersTable)
-      .where(eq(usersTable.email, email.toLowerCase().trim()));
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
-    if (!user) return res.status(401).json({ message: "Invalid email or password" });
-    if (user.isDeleted) return res.status(401).json({ message: "Account not found" });
-    if (!user.isActive) return res.status(401).json({ message: "Account is deactivated" });
-    if (user.password !== password) return res.status(401).json({ message: "Invalid email or password" });
+    if (!user) {
+      res.status(401).json({ message: "Invalid email or password" });
+      return;
+    }
+    if (user.isDeleted) {
+      res.status(401).json({ message: "Account not found" });
+      return;
+    }
+    if (!user.isActive) {
+      res.status(401).json({ message: "Account is deactivated" });
+      return;
+    }
+    if (user.password !== password) {
+      res.status(401).json({ message: "Invalid email or password" });
+      return;
+    }
 
-    const userData = formatUser(user);
-    res.cookie("lms_user", JSON.stringify(userData), {
-      httpOnly: false,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
-      path: "/",
-    });
-
+    const userData = setUserCookie(res, user);
     res.json({ user: userData, message: "Login successful" });
   } catch (err) {
     console.error(err);
@@ -48,25 +158,34 @@ router.post("/auth/login", async (req, res) => {
   }
 });
 
-router.post("/auth/logout", (_req, res) => {
+// --- Logout ---
+router.post("/auth/logout", (_req: Request, res: Response): void => {
   res.clearCookie("lms_user", { path: "/" });
   res.json({ message: "Logged out successfully" });
 });
 
-router.get("/auth/me", async (req, res) => {
+// --- Get current user ---
+router.get("/auth/me", async (req: Request, res: Response): Promise<void> => {
   try {
     const cookieVal = req.cookies?.lms_user;
-    if (!cookieVal) return res.status(401).json({ message: "Not authenticated" });
-
-    let cookieData: any;
-    try { cookieData = JSON.parse(cookieVal); } catch {
-      return res.status(401).json({ message: "Invalid session" });
+    if (!cookieVal) {
+      res.status(401).json({ message: "Not authenticated" });
+      return;
     }
 
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, cookieData.id));
+    let cookieData: any;
+    try {
+      cookieData = JSON.parse(cookieVal);
+    } catch {
+      res.status(401).json({ message: "Invalid session" });
+      return;
+    }
+
+    const user = await User.findById(cookieData.id);
     if (!user || !user.isActive || user.isDeleted) {
       res.clearCookie("lms_user", { path: "/" });
-      return res.status(401).json({ message: "Session expired" });
+      res.status(401).json({ message: "Session expired" });
+      return;
     }
 
     res.json(formatUser(user));

@@ -157,7 +157,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: User
@@ -174,7 +174,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -197,7 +197,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Deleted
@@ -216,7 +216,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -276,7 +276,7 @@ paths:
         - name: categoryId
           in: query
           schema:
-            type: integer
+            type: string
         - name: status
           in: query
           schema:
@@ -290,7 +290,7 @@ paths:
         - name: trainerId
           in: query
           schema:
-            type: integer
+            type: string
         - name: page
           in: query
           schema:
@@ -336,7 +336,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Course with modules
@@ -353,7 +353,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -376,7 +376,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Deleted
@@ -395,7 +395,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: List of modules
@@ -433,7 +433,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -456,7 +456,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Deleted
@@ -475,7 +475,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: List of lessons
@@ -513,7 +513,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Lesson with quiz
@@ -530,7 +530,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -553,7 +553,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Deleted
@@ -572,7 +572,7 @@ paths:
           in: query
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Quiz or null
@@ -608,7 +608,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -631,7 +631,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Deleted
@@ -649,11 +649,11 @@ paths:
         - name: userId
           in: query
           schema:
-            type: integer
+            type: string
         - name: courseId
           in: query
           schema:
-            type: integer
+            type: string
         - name: status
           in: query
           schema:
@@ -696,7 +696,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -773,7 +773,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         firstName:
           type: string
         lastName:
@@ -819,7 +819,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         firstName:
           type: string
         lastName:
@@ -899,7 +899,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         name:
           type: string
         description:
@@ -929,7 +929,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -948,10 +948,10 @@ components:
           type: number
           nullable: true
         categoryId:
-          type: integer
+          type: string
           nullable: true
         trainerId:
-          type: integer
+          type: string
           nullable: true
         categoryName:
           type: string
@@ -973,9 +973,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         courseId:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -995,7 +995,7 @@ components:
       type: object
       properties:
         courseId:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -1020,7 +1020,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -1039,10 +1039,10 @@ components:
           type: number
           nullable: true
         categoryId:
-          type: integer
+          type: string
           nullable: true
         trainerId:
-          type: integer
+          type: string
           nullable: true
         categoryName:
           type: string
@@ -1068,9 +1068,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         moduleId:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -1098,9 +1098,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         moduleId:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -1128,7 +1128,7 @@ components:
       type: object
       properties:
         moduleId:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -1178,20 +1178,20 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         lessonId:
-          type: integer
+          type: string
       required: [id, title, lessonId]
 
     Quiz:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         lessonId:
-          type: integer
+          type: string
         title:
           type: string
         questions:
@@ -1208,7 +1208,7 @@ components:
       type: object
       properties:
         lessonId:
-          type: integer
+          type: string
         title:
           type: string
         questions:
@@ -1231,11 +1231,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         userId:
-          type: integer
+          type: string
         courseId:
-          type: integer
+          type: string
         status:
           type: string
           enum: [ACTIVE, COMPLETED, DROPPED]
@@ -1257,9 +1257,9 @@ components:
       type: object
       properties:
         userId:
-          type: integer
+          type: string
         courseId:
-          type: integer
+          type: string
       required: [userId, courseId]
 
     UpdateEnrollmentRequest:
@@ -1296,7 +1296,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         userName:
           type: string
         courseName:
@@ -1311,7 +1311,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         enrollmentCount:

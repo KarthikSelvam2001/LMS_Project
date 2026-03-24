@@ -1,0 +1,69 @@
+[2026-03-24T17:27:28.216Z] Attempting cert for user 69c2c938d8690585fa2bfdda course 69c2c6fc17198cffda082faf force=false
+[2026-03-24T17:27:28.223Z] Enrollment found. ID: 69c2c975d8690585fa2bfe55, Progress: 100, Status: COMPLETED
+[2026-03-24T17:27:28.232Z] Quizzes: 1/1 passed
+[2026-03-24T17:27:28.235Z] Fetching course/user to generate PDF...
+[2026-03-24T17:27:28.246Z] Generating PDF at C:\Users\HP\Drive\Desktop\Replit Node\LMS-Dashboard-v2\LMS-Dashboard\artifacts\api-server\public\certificates\CERT-9D1CAECA.pdf
+[2026-03-24T17:27:28.470Z] Attempting cert for user 69c2c938d8690585fa2bfdda course 69c2c6fc17198cffda082faf force=false
+[2026-03-24T17:27:28.474Z] Enrollment found. ID: 69c2c975d8690585fa2bfe55, Progress: 100, Status: COMPLETED
+[2026-03-24T17:27:28.484Z] Quizzes: 1/1 passed
+[2026-03-24T17:27:28.488Z] Certificate ALREADY EXISTS: CERT-9D1CAECA
+[2026-03-24T17:27:30.098Z] My Certs Hit: user=69c2c938d8690585fa2bfdda, completed=1, existingCerts=1
+[2026-03-24T17:27:30.100Z] Checking completion for cId=69c2c6fc17198cffda082faf
+[2026-03-24T17:32:24.879Z] My Certs Hit: user=69c2c938d8690585fa2bfdda, completed=1, existingCerts=1
+[2026-03-24T17:32:24.881Z] Checking completion for cId=69c2c6fc17198cffda082faf
+[2026-03-24T17:33:16.545Z] Attempting cert for user 69c2c938d8690585fa2bfdda course 69c2ca66d8690585fa2bff36 force=false
+[2026-03-24T17:33:16.549Z] Enrollment found. ID: 69c2cad4d8690585fa2c0073, Progress: 0, Status: ACTIVE
+[2026-03-24T17:33:16.550Z] Skipping: Progress < 100 (0)
+[2026-03-24T17:37:10.403Z] Attempting cert for user 69c2cbaee910ac283ee5d990 course 69c2cba3e910ac283ee5d93e force=false
+[2026-03-24T17:37:10.408Z] Enrollment found. ID: 69c2cbbae910ac283ee5da0b, Progress: 0, Status: ACTIVE
+[2026-03-24T17:37:10.410Z] Skipping: Progress < 100 (0)
+[2026-03-24T17:41:05.803Z] My Certs Hit: user=69c2cbf5a4dd5ff21e155b83, completed=0, existingCerts=0
+[2026-03-24T17:41:52.248Z] Attempting cert for user 69c2cbf5a4dd5ff21e155b83 course 69c2cbeda4dd5ff21e155b34 force=false
+[2026-03-24T17:41:52.250Z] Enrollment found. ID: 69c2ccc0a4dd5ff21e155d6e, Progress: 100, Status: COMPLETED
+[2026-03-24T17:41:52.254Z] Quizzes: 1/1 passed
+[2026-03-24T17:41:52.256Z] Fetching course/user to generate PDF...
+[2026-03-24T17:41:52.261Z] Generating PDF at C:\Users\HP\Drive\Desktop\Replit Node\LMS-Dashboard-v2\LMS-Dashboard\artifacts\api-server\public\certificates\CERT-54565E8E.pdf
+[2026-03-24T17:41:52.378Z] Attempting cert for user 69c2cbf5a4dd5ff21e155b83 course 69c2cbeda4dd5ff21e155b34 force=false
+[2026-03-24T17:41:52.381Z] Enrollment found. ID: 69c2ccc0a4dd5ff21e155d6e, Progress: 100, Status: COMPLETED
+[2026-03-24T17:41:52.385Z] Quizzes: 1/1 passed
+[2026-03-24T17:41:52.387Z] Certificate ALREADY EXISTS: CERT-54565E8E
+[2026-03-24T17:41:55.636Z] My Certs Hit: user=69c2cbf5a4dd5ff21e155b83, completed=1, existingCerts=1
+[2026-03-24T17:41:55.637Z] Checking completion for cId=69c2cbeda4dd5ff21e155b34
+[2026-03-24T17:41:59.031Z] Enrollment completed found: 69c2cbeda4dd5ff21e155b34
+[2026-03-24T17:42:07.402Z] Attempting cert for user 69c2cbf5a4dd5ff21e155b83 course 69c2cc43a4dd5ff21e155c06 force=false
+[2026-03-24T17:42:07.405Z] Enrollment found. ID: 69c2ccb9a4dd5ff21e155d0c, Progress: 100, Status: COMPLETED
+[2026-03-24T17:42:07.411Z] Quizzes: 1/1 passed
+[2026-03-24T17:42:07.413Z] Fetching course/user to generate PDF...
+[2026-03-24T17:42:07.418Z] Generating PDF at C:\Users\HP\Drive\Desktop\Replit Node\LMS-Dashboard-v2\LMS-Dashboard\artifacts\api-server\public\certificates\CERT-3B67983A.pdf
+[2026-03-24T17:42:07.460Z] Attempting cert for user 69c2cbf5a4dd5ff21e155b83 course 69c2cc43a4dd5ff21e155c06 force=false
+[2026-03-24T17:42:07.461Z] Enrollment found. ID: 69c2ccb9a4dd5ff21e155d0c, Progress: 100, Status: COMPLETED
+[2026-03-24T17:42:07.466Z] Quizzes: 1/1 passed
+[2026-03-24T17:42:07.468Z] Certificate ALREADY EXISTS: CERT-3B67983A
+[2026-03-24T17:42:09.638Z] My Certs Hit: user=69c2cbf5a4dd5ff21e155b83, completed=2, existingCerts=2
+[2026-03-24T17:42:09.639Z] Checking completion for cId=69c2cc43a4dd5ff21e155c06
+[2026-03-24T17:42:09.640Z] Checking completion for cId=69c2cbeda4dd5ff21e155b34
+[2026-03-24T18:21:59.505Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=0, existingCerts=0
+[2026-03-24T18:22:30.837Z] Attempting cert for user 69c2d6169fad60b77a19b098 course 69c2d5d49fad60b77a19b053 force=false
+[2026-03-24T18:22:30.839Z] Enrollment found. ID: 69c2d65d9fad60b77a19b11d, Progress: 100, Status: COMPLETED
+[2026-03-24T18:22:30.844Z] Quizzes: 1/1 passed
+[2026-03-24T18:22:30.845Z] Fetching course/user to generate PDF...
+[2026-03-24T18:22:30.850Z] Generating PDF at C:\Users\HP\Drive\Desktop\Replit Node\LMS-Dashboard-v2\LMS-Dashboard\artifacts\api-server\public\certificates\CERT-5306F6BC.pdf
+[2026-03-24T18:22:30.968Z] Attempting cert for user 69c2d6169fad60b77a19b098 course 69c2d5d49fad60b77a19b053 force=false
+[2026-03-24T18:22:30.970Z] Enrollment found. ID: 69c2d65d9fad60b77a19b11d, Progress: 100, Status: COMPLETED
+[2026-03-24T18:22:30.975Z] Quizzes: 1/1 passed
+[2026-03-24T18:22:30.977Z] Certificate ALREADY EXISTS: CERT-5306F6BC
+[2026-03-24T18:22:35.442Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:22:35.443Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-24T18:22:49.818Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:22:49.819Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-24T18:23:35.718Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:23:35.719Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-24T18:23:44.551Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:23:44.552Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-24T18:25:29.048Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:25:29.049Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-24T18:28:32.152Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:28:32.156Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-24T18:35:41.734Z] Enrollment completed found: 69c2d5d49fad60b77a19b053
+[2026-03-24T18:35:47.813Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
+[2026-03-24T18:35:47.817Z] Checking completion for cId=69c2d5d49fad60b77a19b053

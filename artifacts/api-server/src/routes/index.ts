@@ -13,11 +13,16 @@ import attendanceRouter from "./attendance";
 import certificatesRouter from "./certificates";
 import leaderboardRouter from "./leaderboard";
 import dashboardRouter from "./dashboard";
+import progressRouter from "./progress";
+import { auth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+
+// Protected routes
+router.use(auth);
 router.use(usersRouter);
 router.use(categoriesRouter);
 router.use(coursesRouter);
@@ -27,8 +32,9 @@ router.use(quizzesRouter);
 router.use(quizAttemptsRouter);
 router.use(enrollmentsRouter);
 router.use(attendanceRouter);
-router.use(certificatesRouter);
+router.use("/certificates", certificatesRouter);
 router.use(leaderboardRouter);
 router.use(dashboardRouter);
+router.use("/progress", progressRouter);
 
 export default router;

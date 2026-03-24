@@ -1,70 +1,150 @@
-import { Router, type IRouter } from "express";
-import { db, certificatesTable, enrollmentsTable, usersTable, coursesTable, leaderboardTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { Router, type Response } from "express";
+import { Certificate, Enrollment, Course, User, mongoose } from "@workspace/db";
+import { AuthRequest } from "../middlewares/auth";
+import { checkAndGenerateCertificate } from "./progress";
+import path from "path";
+import fs from "fs";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.get("/certificates", async (req, res) => {
+// GET /api/certificates/my-certificates
+router.get("/my-certificates", async (req: AuthRequest, res: Response) => {
   try {
-    const { userId } = req.query as Record<string, string>;
-    if (!userId) return res.status(400).json({ message: "userId required" });
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
 
-    const certs = await db.execute(
-      { sql: `SELECT c.*, co.title as course_title, u.first_name, u.last_name FROM certificates c JOIN courses co ON c.course_id = co.id JOIN users u ON c.user_id = u.id WHERE c.user_id = $1`, params: [parseInt(userId)] }
-    );
+    // Auto-generate missing certificates before fetching
+    if (user.roleId === "LEARNER") {
+      const completedEnrollments = await Enrollment.find({ userId: user.id, status: "COMPLETED", progress: 100, isDeleted: { $ne: true } });
+      const existingCerts = await Certificate.find({ learnerId: user.id }).distinct('courseId');
+      
+      fs.appendFileSync('./lms_debug.log', `[${new Date().toISOString()}] My Certs Hit: user=${user.id}, completed=${completedEnrollments.length}, existingCerts=${existingCerts.length}\n`);
 
-    res.json(certs.rows.map((r: any) => ({
-      id: r.id,
-      userId: r.user_id,
-      courseId: r.course_id,
-      courseTitle: r.course_title,
-      learnerName: `${r.first_name} ${r.last_name}`,
-      certificateUrl: r.certificate_url,
-      issuedAt: r.issued_at,
+      const existingCourseIds = existingCerts.map(c => c.toString());
+      
+      for (const enr of completedEnrollments) {
+        const cId = enr.courseId?.toString();
+        fs.appendFileSync('./lms_debug.log', `[${new Date().toISOString()}] Checking completion for cId=${cId}\n`);
+        if (cId && !existingCourseIds.includes(cId)) {
+          console.log(`Auto-generating missing certificate for user ${user.id} course ${cId}`);
+          await checkAndGenerateCertificate(user.id, cId, true);
+        }
+      }
+    }
+
+    const certs = await Certificate.find({ learnerId: user.id })
+      .populate("courseId")
+      .sort({ issuedAt: -1 });
+
+    res.json(certs.map((c: any) => ({
+      id: c.certificateId,
+      courseId: c.courseId?._id,
+      courseName: c.courseId?.title || "Unknown Course",
+      issuedAt: c.issuedAt,
+      pdfUrl: `/api/certificates/${c.certificateId}/view`,
+      certificateUrl: c.certificateUrl
     })));
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch certificates" });
   }
 });
 
-router.post("/certificates/generate", async (req, res) => {
+// POST /api/certificates/generate
+router.post("/generate", async (req: AuthRequest, res: Response) => {
   try {
     const { userId, courseId } = req.body;
-    if (!userId || !courseId) return res.status(400).json({ message: "userId and courseId required" });
-
-    const uid = parseInt(userId);
-    const cid = parseInt(courseId);
-
-    const [enrollment] = await db.select().from(enrollmentsTable)
-      .where(and(eq(enrollmentsTable.userId, uid), eq(enrollmentsTable.courseId, cid)));
-
-    if (!enrollment || enrollment.progress < 100) {
-      return res.status(400).json({ message: "Course not completed yet" });
+    const effectiveUserId = userId || req.user?.id;
+    
+    if (!effectiveUserId || !courseId) {
+      res.status(400).json({ message: "userId and courseId required" });
+      return;
     }
 
-    const existing = await db.select().from(certificatesTable)
-      .where(and(eq(certificatesTable.userId, uid), eq(certificatesTable.courseId, cid)));
-
-    if (existing.length > 0) {
-      return res.json({ ...existing[0], issuedAt: existing[0].issuedAt.toISOString(), message: "Certificate already issued" });
+    await checkAndGenerateCertificate(effectiveUserId, courseId, true);
+    
+    const cert = await Certificate.findOne({ learnerId: effectiveUserId, courseId });
+    if (!cert) {
+      res.status(400).json({ message: "Certificate could not be generated. Ensure course is 100% complete and all quizzes are passed." });
+      return;
     }
 
-    const [cert] = await db.insert(certificatesTable).values({ userId: uid, courseId: cid }).returning();
-
-    // Award +100 points for course completion
-    const lb = await db.select().from(leaderboardTable).where(eq(leaderboardTable.userId, uid));
-    if (lb.length > 0) {
-      await db.update(leaderboardTable)
-        .set({ points: lb[0].points + 100, updatedAt: new Date() })
-        .where(eq(leaderboardTable.userId, uid));
-    } else {
-      await db.insert(leaderboardTable).values({ userId: uid, points: 100 });
-    }
-
-    res.status(201).json({ ...cert, issuedAt: cert.issuedAt.toISOString() });
+    res.status(201).json(cert);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to generate certificate" });
+  }
+});
+
+// GET /api/certificates/backfill (Temporary script)
+router.get("/backfill", async (req: AuthRequest, res: Response) => {
+  try {
+    const completed = await Enrollment.find({ status: "COMPLETED", progress: 100, isDeleted: { $ne: true } });
+    let count = 0;
+    for (const enr of completed) {
+      await checkAndGenerateCertificate(enr.userId.toString(), enr.courseId.toString(), true);
+      count++;
+    }
+    res.json({ message: `Backfilled ${count} certificates` });
+  } catch (err) {
+    res.status(500).json({ message: "Backfill failed" });
+  }
+});
+
+// GET /api/certificates/:id/view
+router.get("/:id/view", async (req: AuthRequest, res: Response) => {
+  try {
+    const cert = await Certificate.findOne({ 
+      $or: [
+        { certificateId: req.params.id },
+        { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : new mongoose.Types.ObjectId() }
+      ]
+    });
+    if (!cert) return res.status(404).json({ message: "Certificate not found" });
+
+    const filename = path.basename(cert.certificateUrl);
+    const certDir = path.join(process.cwd(), "public", "certificates");
+    const filePath = path.join(certDir, filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "Certificate file not found" });
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+    return fs.createReadStream(filePath).pipe(res);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to view certificate" });
+  }
+});
+
+// GET /api/certificates/:id/download
+router.get("/:id/download", async (req: AuthRequest, res: Response) => {
+  try {
+    const cert = await Certificate.findOne({ 
+      $or: [
+        { certificateId: req.params.id },
+        { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : new mongoose.Types.ObjectId() }
+      ]
+    });
+    if (!cert) return res.status(404).json({ message: "Certificate not found" });
+
+    const filename = path.basename(cert.certificateUrl);
+    const certDir = path.join(process.cwd(), "public", "certificates");
+    const filePath = path.join(certDir, filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "Certificate file not found" });
+    }
+
+    return res.download(filePath, filename);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to download certificate" });
   }
 });
 

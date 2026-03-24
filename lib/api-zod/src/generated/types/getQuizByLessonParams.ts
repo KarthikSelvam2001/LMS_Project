@@ -7,5 +7,5 @@
  */
 
 export type GetQuizByLessonParams = {
-  lessonId: number;
+  lessonId: string;
 };

@@ -1,18 +1,21 @@
 import { Router, type IRouter } from "express";
-import { db, categoriesTable, coursesTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { Category, Course } from "@workspace/db";
 
 const router: IRouter = Router();
 
 router.get("/categories", async (_req, res) => {
   try {
-    const categories = await db.select().from(categoriesTable).orderBy(categoriesTable.name);
+    const categories = await Category.find().sort({ name: 1 });
     const categoriesWithCount = await Promise.all(
       categories.map(async (cat) => {
-        const countResult = await db.execute(sql`SELECT COUNT(*)::int as count FROM courses WHERE category_id = ${cat.id}`);
+        const courseCount = await Course.countDocuments({ categoryId: cat._id });
         return {
-          ...cat,
-          courseCount: (countResult.rows[0] as any)?.count ?? 0,
+          id: cat._id,
+          name: cat.name,
+          description: cat.description,
+          icon: cat.icon,
+          isActive: cat.isActive,
+          courseCount,
         };
       })
     );
@@ -24,11 +27,11 @@ router.get("/categories", async (_req, res) => {
 
 router.post("/categories", async (req, res) => {
   try {
-    const { name, description, color } = req.body;
+    const { name, description, icon } = req.body;
     if (!name) return res.status(400).json({ message: "Name required" });
 
-    const [cat] = await db.insert(categoriesTable).values({ name, description, color }).returning();
-    res.status(201).json({ ...cat, courseCount: 0 });
+    const cat = await Category.create({ name, description, icon });
+    res.status(201).json({ ...cat.toObject(), id: cat._id, courseCount: 0 });
   } catch (err) {
     res.status(500).json({ message: "Failed to create category" });
   }

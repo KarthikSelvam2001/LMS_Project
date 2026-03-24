@@ -1,83 +1,88 @@
-import { Router, type IRouter } from "express";
-import { db, quizzesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { Router, type Response } from "express";
+import { Quiz, mongoose } from "@workspace/db";
+import { AuthRequest, authorize } from "../middlewares/auth";
 
-const router: IRouter = Router();
+const router = Router();
 
-function fmt(q: typeof quizzesTable.$inferSelect) {
-  return { ...q, questions: q.questions as any[], createdAt: q.createdAt.toISOString(), updatedAt: q.updatedAt.toISOString() };
+function fmt(q: any) {
+  return { ...q.toObject(), id: q._id };
 }
 
-router.get("/quizzes", async (req, res) => {
+router.get("/quizzes", async (req: AuthRequest, res: Response) => {
   try {
     const { lessonId } = req.query as Record<string, string>;
     if (!lessonId) return res.status(400).json({ message: "lessonId required" });
 
-    const [quiz] = await db.select().from(quizzesTable).where(eq(quizzesTable.lessonId, parseInt(lessonId)));
+    console.log("[quizzes] GET /quizzes lessonId:", lessonId);
+
+    const quiz = await Quiz.findOne({ lessonId: new mongoose.Types.ObjectId(lessonId), isDeleted: { $ne: true } });
     if (!quiz) return res.json(null);
-    res.json(fmt(quiz));
+    return res.json(fmt(quiz));
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch quiz" });
+    console.error("[quizzes] error:", err);
+    return res.status(500).json({ message: "Failed to fetch quiz" });
   }
 });
 
-router.post("/quizzes", async (req, res) => {
+router.post("/quizzes", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
     const { lessonId, title = "Lesson Quiz", questions = [] } = req.body;
     if (!lessonId) return res.status(400).json({ message: "lessonId required" });
 
-    const existing = await db.select().from(quizzesTable).where(eq(quizzesTable.lessonId, parseInt(lessonId)));
-    if (existing.length > 0) {
+    const lessonOid = new mongoose.Types.ObjectId(lessonId);
+
+    const existing = await Quiz.findOne({ lessonId: lessonOid, isDeleted: { $ne: true } });
+    if (existing) {
       return res.status(400).json({ message: "Quiz already exists for this lesson. Use PUT to update." });
     }
 
-    const [quiz] = await db.insert(quizzesTable).values({
-      lessonId: parseInt(lessonId),
+    const quiz = await Quiz.create({
+      lessonId: lessonOid,
       title,
       questions,
-    }).returning();
+    });
 
-    res.status(201).json(fmt(quiz));
+    return res.status(201).json(fmt(quiz));
   } catch (err) {
-    res.status(500).json({ message: "Failed to create quiz" });
+    console.error("[quizzes] create error:", err);
+    return res.status(500).json({ message: "Failed to create quiz" });
   }
 });
 
-router.get("/quizzes/:id", async (req, res) => {
+router.get("/quizzes/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    const [quiz] = await db.select().from(quizzesTable).where(eq(quizzesTable.id, id));
+    const quiz = await Quiz.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
-    res.json(fmt(quiz));
+    return res.json(fmt(quiz));
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch quiz" });
+    return res.status(500).json({ message: "Failed to fetch quiz" });
   }
 });
 
-router.put("/quizzes/:id", async (req, res) => {
+router.put("/quizzes/:id", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
     const { title, questions } = req.body;
 
-    const [quiz] = await db.update(quizzesTable)
-      .set({ title, questions, updatedAt: new Date() })
-      .where(eq(quizzesTable.id, id))
-      .returning();
+    const quiz = await Quiz.findByIdAndUpdate(
+      req.params.id,
+      { title, questions },
+      { new: true }
+    );
 
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
-    res.json(fmt(quiz));
+    return res.json(fmt(quiz));
   } catch (err) {
-    res.status(500).json({ message: "Failed to update quiz" });
+    return res.status(500).json({ message: "Failed to update quiz" });
   }
 });
 
-router.delete("/quizzes/:id", async (req, res) => {
+router.delete("/quizzes/:id", authorize(["ADMIN", "TRAINER"]), async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    await db.delete(quizzesTable).where(eq(quizzesTable.id, id));
-    res.json({ message: "Quiz deleted successfully" });
+    const quiz = await Quiz.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    return res.json({ message: "Quiz deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete quiz" });
+    return res.status(500).json({ message: "Failed to delete quiz" });
   }
 });
 

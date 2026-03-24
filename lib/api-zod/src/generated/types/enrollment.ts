@@ -8,9 +8,9 @@
 import type { EnrollmentStatus } from "./enrollmentStatus";
 
 export interface Enrollment {
-  id: number;
-  userId: number;
-  courseId: number;
+  id: string;
+  userId: string;
+  courseId: string;
   status: EnrollmentStatus;
   progress: number;
   userName?: string | null;

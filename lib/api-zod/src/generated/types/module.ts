@@ -7,8 +7,8 @@
  */
 
 export interface Module {
-  id: number;
-  courseId: number;
+  id: string;
+  courseId: string;
   title: string;
   description?: string | null;
   orderIndex: number;
