@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout";
-import { 
-  useGetCourses, 
-  useCreateCourse, 
+import {
+  useGetCourses,
+  useCreateCourse,
   useGetCategories,
   useGetUsers,
   useGetEnrollments,
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
+import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "@/components/ui/dialog";
 import {
@@ -37,8 +37,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Search, Plus, BookOpen, Clock, Users, ArrowRight, LogOut, CheckCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Progress } from "@/components/ui/progress";
-import { 
-  useUpdateEnrollmentStatus 
+import {
+  useUpdateEnrollmentStatus
 } from "@workspace/api-client-react";
 import { CourseFilters } from "@/components/courses/CourseFilters";
 import { CourseCardVertical } from "@/components/courses/CourseCardVertical";
@@ -63,27 +63,27 @@ export default function Courses() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("explore");
   const [dropConfirmOpen, setDropConfirmOpen] = useState(false);
-  const [courseToDrop, setCourseToDrop] = useState<{id: string, enrollmentId: string} | null>(null);
+  const [courseToDrop, setCourseToDrop] = useState<{ id: string, enrollmentId: string } | null>(null);
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const { data: categories } = useGetCategories();
   const { data: trainersData } = useGetUsers({ role: "TRAINER" as any });
   const trainers = trainersData?.users;
-  
+
   const { data: enrollments } = useGetEnrollments({
     userId: user?.id
   });
 
-  const { data, isLoading } = useGetCourses({ 
+  const { data, isLoading } = useGetCourses({
     search: activeTab === "explore" ? (search || undefined) : undefined,
     status: activeTab === "explore" && statusFilter !== "ALL" ? (statusFilter as any) : undefined,
     level: activeTab === "explore" && levelFilter !== "ALL" ? (levelFilter as any) : undefined,
-    page: 1, 
-    limit: 100 
+    page: 1,
+    limit: 100
   });
 
   const { data: myCoursesEnrollments, isLoading: myCoursesLoading } = useQuery({
@@ -268,7 +268,7 @@ export default function Courses() {
             </TabsList>
 
             <TabsContent value="explore" className="space-y-8">
-              <CourseFilters 
+              <CourseFilters
                 searchValue={search}
                 statusValue={statusFilter}
                 levelValue={levelFilter}
@@ -283,9 +283,9 @@ export default function Courses() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {data?.courses.map((course: any) => (
-                    <CourseCardVertical 
-                      key={course.id} 
-                      course={course} 
+                    <CourseCardVertical
+                      key={course.id}
+                      course={course}
                       enrollment={enrollments?.find(e => String(e.courseId?._id || e.courseId) === String(course.id))}
                       onViewDetails={() => setLocation(`/courses/${course.id}`)}
                     />
@@ -295,7 +295,7 @@ export default function Courses() {
             </TabsContent>
 
             <TabsContent value="my-courses" className="space-y-8">
-              <CourseFilters 
+              <CourseFilters
                 searchValue={search}
                 statusValue={statusFilter}
                 levelValue={levelFilter}
@@ -315,9 +315,9 @@ export default function Courses() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {getFilteredMyCourses().map((enrollment: any) => (
-                    <CourseCardVertical 
-                      key={enrollment.id} 
-                      course={enrollment.courseId} 
+                    <CourseCardVertical
+                      key={enrollment.id}
+                      course={enrollment.courseId}
                       enrollment={enrollment}
                       onViewDetails={() => setLocation(`/courses/${enrollment.courseId?._id || enrollment.courseId}`)}
                     />
@@ -328,13 +328,13 @@ export default function Courses() {
           </Tabs>
         ) : (
           <>
-            <CourseFilters 
-                searchValue={search}
-                statusValue={statusFilter}
-                levelValue={levelFilter}
-                onSearchChange={setSearch}
-                onStatusChange={setStatusFilter}
-                onLevelChange={setLevelFilter}
+            <CourseFilters
+              searchValue={search}
+              statusValue={statusFilter}
+              levelValue={levelFilter}
+              onSearchChange={setSearch}
+              onStatusChange={setStatusFilter}
+              onLevelChange={setLevelFilter}
             />
             {isLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading courses...</div>
@@ -343,12 +343,12 @@ export default function Courses() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {data?.courses.map((course: any) => (
-                    <CourseCardVertical 
-                        key={course.id} 
-                        course={course} 
-                        enrollment={enrollments?.find(e => String(e.courseId?._id || e.courseId) === String(course.id))}
-                        onViewDetails={() => setLocation(`/courses/${course.id}`)}
-                    />
+                  <CourseCardVertical
+                    key={course.id}
+                    course={course}
+                    enrollment={enrollments?.find(e => String(e.courseId?._id || e.courseId) === String(course.id))}
+                    onViewDetails={() => setLocation(`/courses/${course.id}`)}
+                  />
                 ))}
               </div>
             )}
@@ -366,7 +366,7 @@ export default function Courses() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={() => courseToDrop && dropMutation.mutate({ id: courseToDrop.enrollmentId, data: { status: "DROPPED" } })}
                 className="bg-red-600 hover:bg-red-700"
               >
@@ -379,16 +379,35 @@ export default function Courses() {
     </AppLayout>
   );
 
+  function renderEmptyState() {
+    return (
+      <div className="text-center py-24 bg-card border border-dashed rounded-xl flex flex-col items-center">
+        <BookOpen className="w-12 h-12 text-muted-foreground mb-4 opacity-50" />
+        <h3 className="text-lg font-semibold">No courses found</h3>
+        <p className="text-muted-foreground mt-1">Check back later or adjust your search filters.</p>
+        {(search || statusFilter !== "ALL" || levelFilter !== "ALL") && (
+          <Button variant="outline" className="mt-4" onClick={() => {
+            setSearch("");
+            setStatusFilter("ALL");
+            setLevelFilter("ALL");
+          }}>
+            Clear Filters
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   function getFilteredMyCourses() {
     if (!myCoursesEnrollments) return [];
-    
+
     return myCoursesEnrollments.filter((e: any) => {
       const course = e.courseId;
       const titleMatch = !search || course?.title?.toLowerCase().includes(search.toLowerCase());
       const descMatch = !search || course?.description?.toLowerCase().includes(search.toLowerCase());
       const statusMatch = statusFilter === "ALL" || e.status === statusFilter;
       const levelMatch = levelFilter === "ALL" || course?.level === levelFilter;
-      
+
       return (titleMatch || descMatch) && statusMatch && levelMatch;
     });
   }

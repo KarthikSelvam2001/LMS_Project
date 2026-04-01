@@ -1,0 +1,31 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm.
+
+> @workspace/lms-frontend@0.0.0 dev
+> vite --config vite.config.ts --host 0.0.0.0
+
+node:internal/modules/cjs/loader:1424
+  throw err;
+  ^
+
+Error: Cannot find module 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\lms-frontend\node_modules\vite\bin\vite.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.12.0
+npm error Lifecycle script `dev` failed with error:
+npm error code 1
+npm error path C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\lms-frontend
+npm error workspace @workspace/lms-frontend@0.0.0
+npm error location C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\lms-frontend
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c vite --config vite.config.ts --host 0.0.0.0

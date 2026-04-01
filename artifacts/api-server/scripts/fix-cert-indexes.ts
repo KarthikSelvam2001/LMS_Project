@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
-const MONGODB_URI = "mongodb://localhost:27017/lms_Project_Live";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/lms_Project_Live";
 
 async function fixCertIndexes() {
   try {
@@ -10,7 +12,7 @@ async function fixCertIndexes() {
 
     const db = mongoose.connection.db;
     if (!db) throw new Error("Database connection not established");
-    
+
     const collection = db.collection("certificates");
     const indexes = await collection.indexes();
     console.log("Current indexes:", JSON.stringify(indexes, null, 2));

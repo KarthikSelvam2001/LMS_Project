@@ -67,3 +67,55 @@
 [2026-03-24T18:35:41.734Z] Enrollment completed found: 69c2d5d49fad60b77a19b053
 [2026-03-24T18:35:47.813Z] My Certs Hit: user=69c2d6169fad60b77a19b098, completed=1, existingCerts=1
 [2026-03-24T18:35:47.817Z] Checking completion for cId=69c2d5d49fad60b77a19b053
+[2026-03-30T07:25:25.921Z] Attempting cert for user 69ca19c40dd75d8cf4bfe0fa course 69ca19a10dd75d8cf4bfe0b5 force=false
+[2026-03-30T07:25:25.930Z] Enrollment found. ID: 69ca255e0dd75d8cf4bfe435, Progress: 100, Status: COMPLETED
+[2026-03-30T07:25:25.943Z] Quizzes: 1/1 passed
+[2026-03-30T07:25:25.947Z] Fetching course/user to generate PDF...
+[2026-03-30T07:25:25.960Z] Generating PDF at C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\public\certificates\CERT-A8F2DDC1.pdf
+[2026-03-30T07:25:26.026Z] ERROR: ENOENT: no such file or directory, open 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\js\data\Helvetica.afm'
+Error: ENOENT: no such file or directory, open 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\js\data\Helvetica.afm'
+    at Object.readFileSync (node:fs:440:20)
+    at Object.Helvetica (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font\standard.js:20:15)
+    at new constructor (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font\standard.js:60:54)
+    at PDFFontFactory.open (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font_factory.js:11:16)
+    at PDFDocument.font (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\mixins\fonts.js:85:33)
+    at PDFDocument.initFonts (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\mixins\fonts.js:49:12)
+    at new constructor (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\document.js:97:10)
+    at <anonymous> (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\src\lib\pdf-service.ts:16:19)
+    at new Promise (<anonymous>)
+    at generateCertificatePDF (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\src\lib\pdf-service.ts:14:10)
+[2026-03-30T07:25:26.078Z] Attempting cert for user 69ca19c40dd75d8cf4bfe0fa course 69ca19a10dd75d8cf4bfe0b5 force=false
+[2026-03-30T07:25:26.096Z] Enrollment found. ID: 69ca255e0dd75d8cf4bfe435, Progress: 100, Status: COMPLETED
+[2026-03-30T07:25:26.110Z] Quizzes: 1/1 passed
+[2026-03-30T07:25:26.118Z] Fetching course/user to generate PDF...
+[2026-03-30T07:25:26.134Z] Generating PDF at C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\public\certificates\CERT-CEB5A186.pdf
+[2026-03-30T07:25:26.138Z] ERROR: ENOENT: no such file or directory, open 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\js\data\Helvetica.afm'
+Error: ENOENT: no such file or directory, open 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\js\data\Helvetica.afm'
+    at Object.readFileSync (node:fs:440:20)
+    at Object.Helvetica (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font\standard.js:20:15)
+    at new constructor (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font\standard.js:60:54)
+    at PDFFontFactory.open (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font_factory.js:11:16)
+    at PDFDocument.font (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\mixins\fonts.js:85:33)
+    at PDFDocument.initFonts (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\mixins\fonts.js:49:12)
+    at new constructor (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\document.js:97:10)
+    at <anonymous> (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\src\lib\pdf-service.ts:16:19)
+    at new Promise (<anonymous>)
+    at generateCertificatePDF (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\src\lib\pdf-service.ts:14:10)
+[2026-03-30T07:25:27.234Z] My Certs Hit: user=69ca19c40dd75d8cf4bfe0fa, completed=1, existingCerts=0
+[2026-03-30T07:25:27.235Z] Checking completion for cId=69ca19a10dd75d8cf4bfe0b5
+[2026-03-30T07:25:27.236Z] Attempting cert for user 69ca19c40dd75d8cf4bfe0fa course 69ca19a10dd75d8cf4bfe0b5 force=true
+[2026-03-30T07:25:27.238Z] Enrollment found. ID: 69ca255e0dd75d8cf4bfe435, Progress: 100, Status: COMPLETED
+[2026-03-30T07:25:27.240Z] Fetching course/user to generate PDF...
+[2026-03-30T07:25:27.249Z] Generating PDF at C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\public\certificates\CERT-A14E53E8.pdf
+[2026-03-30T07:25:27.250Z] ERROR: ENOENT: no such file or directory, open 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\js\data\Helvetica.afm'
+Error: ENOENT: no such file or directory, open 'C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\js\data\Helvetica.afm'
+    at Object.readFileSync (node:fs:440:20)
+    at Object.Helvetica (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font\standard.js:20:15)
+    at new constructor (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font\standard.js:60:54)
+    at PDFFontFactory.open (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\font_factory.js:11:16)
+    at PDFDocument.font (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\mixins\fonts.js:85:33)
+    at PDFDocument.initFonts (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\mixins\fonts.js:49:12)
+    at new constructor (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\node_modules\.pnpm\pdfkit@0.18.0\node_modules\pdfkit\lib\document.js:97:10)
+    at <anonymous> (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\src\lib\pdf-service.ts:16:19)
+    at new Promise (<anonymous>)
+    at generateCertificatePDF (C:\Users\Cindrel\OneDrive - Cindrel Systems Pvt Ltd\Desktop\LMS_Clone\LMS_Project\artifacts\api-server\src\lib\pdf-service.ts:14:10)

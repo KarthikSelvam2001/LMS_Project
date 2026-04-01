@@ -1,0 +1,29 @@
+src/pages/categories.tsx(3,53): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/categories.tsx(108,31): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+src/pages/course-detail.tsx(28,8): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/course-detail.tsx(162,19): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/pages/course-detail.tsx(440,19): error TS7006: Parameter '_' implicitly has an 'any' type.
+src/pages/course-detail.tsx(440,22): error TS7006: Parameter 'vars' implicitly has an 'any' type.
+src/pages/course-detail.tsx(476,36): error TS7006: Parameter 'l' implicitly has an 'any' type.
+src/pages/course-detail.tsx(512,33): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/pages/course-detail.tsx(521,25): error TS7006: Parameter 'lesson' implicitly has an 'any' type.
+src/pages/course-detail.tsx(521,33): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/pages/course-detail.tsx(869,36): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/pages/course-detail.tsx(1097,29): error TS7006: Parameter 'mod' implicitly has an 'any' type.
+src/pages/course-detail.tsx(1097,34): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/pages/course-detail.tsx(1228,44): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/course-detail.tsx(1245,42): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/pages/courses.tsx(10,8): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/courses.tsx(42,8): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/courses.tsx(189,46): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/courses.tsx(205,44): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/pages/courses.tsx(282,17): error TS2304: Cannot find name 'renderEmptyState'.
+src/pages/courses.tsx(289,53): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/pages/courses.tsx(342,15): error TS2304: Cannot find name 'renderEmptyState'.
+src/pages/courses.tsx(349,55): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/pages/dashboard.tsx(7,8): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/dashboard.tsx(238,32): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/pages/dashboard.tsx(276,33): error TS7006: Parameter 'course' implicitly has an 'any' type.
+src/pages/enrollments.tsx(3,62): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/users.tsx(8,8): error TS6305: Output file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/dist/index.d.ts' has not been built from source file 'C:/Users/Cindrel/OneDrive - Cindrel Systems Pvt Ltd/Desktop/LMS_Clone/LMS_Project/lib/api-client-react/src/index.ts'.
+src/pages/users.tsx(279,34): error TS7006: Parameter 'user' implicitly has an 'any' type.

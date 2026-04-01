@@ -7,15 +7,13 @@
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "mongoose": "^8.12.1",
-    "uuid": "^11.1.0",
-    "zod": "catalog:"
+    "drizzle-orm": "^0.45.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "@types/mongoose": "^5.11.97",
     "@types/uuid": "^10.0.0"
   }
