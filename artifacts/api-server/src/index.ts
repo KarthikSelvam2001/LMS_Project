@@ -5,10 +5,15 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let currentDir = "";
+if (typeof __dirname !== "undefined") {
+  currentDir = __dirname;
+} else {
+  // @ts-ignore
+  currentDir = path.dirname(fileURLToPath(import.meta.url));
+}
 
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config({ path: path.resolve(currentDir, "../.env") });
 
 const rawPort = process.env["PORT"] || "3000";
 const port = Number(rawPort);
