@@ -84,12 +84,29 @@ function Router() {
   );
 }
 
+function SPAHandler() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");
+    if (redirect) {
+      // Clear the query param from URL without refreshing
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      // Navigate to the intended path
+      setLocation(decodeURIComponent(redirect));
+    }
+  }, [setLocation]);
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
+            <SPAHandler />
             <Router />
             <Toaster />
           </AuthProvider>

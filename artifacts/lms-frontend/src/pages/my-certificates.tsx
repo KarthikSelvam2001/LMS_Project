@@ -47,7 +47,10 @@ export default function MyCertificates() {
   const getAbsoluteUrl = (path: string) => {
     const baseUrl = (window as any).__LMS_API_BASE_URL__ || "";
     if (!path.startsWith("http") && baseUrl) {
-      return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+      const b = baseUrl.replace(/\/$/, "");
+      const p = path.startsWith("/") ? path : `/${path}`;
+      const full = b + p;
+      return full.replace(/\/api\/api\//g, "/api/");
     }
     return path;
   };
