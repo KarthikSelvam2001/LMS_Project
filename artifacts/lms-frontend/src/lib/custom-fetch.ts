@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_PROXY_URL || "";
+const globalBaseUrl = (typeof window !== 'undefined' && (window as any).__LMS_API_BASE_URL__);
+const envBaseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_PROXY_URL || "";
+const BASE_URL = globalBaseUrl || envBaseUrl;
 
 export async function customFetch<T = any>(url: string, options: RequestInit = {}): Promise<T> {
   // If the url is relative, prepend the BASE_URL
@@ -12,6 +14,11 @@ export async function customFetch<T = any>(url: string, options: RequestInit = {
     } else {
       fullUrl = `${normalizedBase}${normalizedUrl}`;
     }
+  }
+
+  // Debug log for production troubleshooting
+  if (import.meta.env.PROD) {
+    console.log(`[Frontend Fetch] Fetching: ${fullUrl} (Base: ${normalizedBase})`);
   }
 
   const response = await fetch(fullUrl, {

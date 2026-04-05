@@ -14,16 +14,16 @@ services:
         sync: false
       - key: NODE_ENV
         value: production
+      - key: FRONTEND_URL
+        value: https://lms-project-h9a8.onrender.com
 
   # Frontend Application
-  - type: web
+  - type: static_site
     name: lms-frontend
-    env: static
     plan: free
     rootDir: artifacts/lms-frontend
     buildCommand: pnpm install && pnpm run build
     publishDir: dist/public
     envVars:
       - key: VITE_API_URL
-        value: https://lms-project-be-hbhd.onrender.com/api # Correct backend URL for production
-
+        value: https://lms-project-be-hbhd.onrender.com/api # Correct backend URL

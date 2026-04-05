@@ -300,27 +300,32 @@ export async function customFetch<T = unknown>(
   const requestInfo = { method, url: resolveUrl(input) };
 
   // Resolve the base URL from environment variables or global config.
-  // In development (Vite), we prefer relative paths to use the proxy.
-  // In production, we use VITE_API_URL or a global fallback.
-  const envBaseUrl = (typeof window !== 'undefined' && (window as any).__LMS_API_BASE_URL__) || import.meta.env?.VITE_API_URL || "";
-  const baseUrl = envBaseUrl.replace(/\/$/, "");
+  const globalBaseUrl = (typeof window !== 'undefined' && (window as any).__LMS_API_BASE_URL__);
+  const envBaseUrl = import.meta.env?.VITE_API_URL || "";
+  const BASE_URL = globalBaseUrl || envBaseUrl;
+  const baseUrl = BASE_URL.replace(/\/$/, "");
   
   let finalInput = input;
   if (typeof input === "string" && !input.startsWith("http")) {
     const normalizedInput = input.startsWith("/") ? input : `/${input}`;
-    // Avoid double prefixing if baseUrl already ends with the start of normalizedInput
-    if (baseUrl && normalizedInput.startsWith("/api") && baseUrl.endsWith("/api")) {
+    // Deduplicate /api prefix
+    if (baseUrl.endsWith("/api") && normalizedInput.startsWith("/api")) {
         finalInput = `${baseUrl.replace(/\/api$/, "")}${normalizedInput}`;
     } else {
         finalInput = `${baseUrl}${normalizedInput}`;
     }
   }
 
+  // Debug log for production troubleshooting
+  if (import.meta.env?.PROD) {
+    console.log(`[API Client] Fetching: ${finalInput} (Base: ${baseUrl})`);
+  }
+
   const response = await fetch(finalInput, { 
     ...init, 
     method, 
     headers,
-    credentials: "include" // CRITICAL: ensure cookies are sent for authentication
+    credentials: "include" // Always send cookies
   });
 
   if (!response.ok) {

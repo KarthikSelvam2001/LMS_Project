@@ -9,7 +9,7 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     process.env.FRONTEND_URL || "*"
-  ],
+  ].filter(o => o !== "*"), // Ensure no wildcard when credentials: true
   credentials: true
 }));
 app.use(cookieParser());
