@@ -36,6 +36,7 @@ function setUserCookie(res: Response, user: any) {
 
 // --- Google SSO Login/Signup ---
 router.post("/auth/google", async (req: Request, res: Response): Promise<void> => {
+  console.log(">>> [DEBUG] /api/auth/google hit at:", new Date().toISOString());
   try {
     const { token } = req.body;
     console.log("Received Google auth request, token length:", token?.length);

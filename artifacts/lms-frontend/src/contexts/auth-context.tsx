@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { customFetch } from "@/lib/custom-fetch";
 
 export type UserRole = "ADMIN" | "TRAINER" | "LEARNER";
 
@@ -33,14 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchMe = useCallback(async () => {
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/me`, { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-      } else {
-        setUser(null);
-      }
+      const data = await customFetch("/api/auth/me");
+      setUser(data);
     } catch {
       setUser(null);
     } finally {
@@ -53,45 +48,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchMe]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const baseUrl = import.meta.env.VITE_API_URL || "";
-    const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/login`, {
+    const data = await customFetch("/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Login failed");
-    }
-
-    const data = await res.json();
     setUser(data.user);
   }, []);
 
   const loginWithGoogle = useCallback(async (token: string) => {
-    const baseUrl = import.meta.env.VITE_API_URL || "";
-    const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/google`, {
+    const data = await customFetch("/api/auth/google", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ token }),
     });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Google sign-in failed");
-    }
-
-    const data = await res.json();
     setUser(data.user);
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "";
-      await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/logout`, { method: "POST", credentials: "include" });
+      await customFetch("/api/auth/logout", { method: "POST" });
     } catch {}
     setUser(null);
   }, []);
