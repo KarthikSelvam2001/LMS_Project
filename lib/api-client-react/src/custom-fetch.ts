@@ -299,10 +299,10 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  // Resolve the base URL from environment variables.
+  // Resolve the base URL from environment variables or global config.
   // In development (Vite), we prefer relative paths to use the proxy.
-  // In production, we use VITE_API_URL.
-  const envBaseUrl = import.meta.env?.VITE_API_URL || "";
+  // In production, we use VITE_API_URL or a global fallback.
+  const envBaseUrl = (typeof window !== 'undefined' && (window as any).__LMS_API_BASE_URL__) || import.meta.env?.VITE_API_URL || "";
   const baseUrl = envBaseUrl.replace(/\/$/, "");
   
   let finalInput = input;

@@ -25,5 +25,5 @@ services:
     publishDir: dist/public
     envVars:
       - key: VITE_API_URL
-        value: https://lms-api-server.onrender.com/api # Replace with your actual backend URL
+        value: https://lms-project-be-hbhd.onrender.com/api # Correct backend URL for production
 

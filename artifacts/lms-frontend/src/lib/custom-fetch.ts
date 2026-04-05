@@ -2,7 +2,17 @@ const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_PROXY_
 
 export async function customFetch<T = any>(url: string, options: RequestInit = {}): Promise<T> {
   // If the url is relative, prepend the BASE_URL
-  const fullUrl = url.startsWith("http") ? url : `${BASE_URL.replace(/\/$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
+  const normalizedBase = BASE_URL.replace(/\/$/, "");
+  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+  
+  let fullUrl = url;
+  if (!url.startsWith("http")) {
+    if (normalizedBase.endsWith("/api") && normalizedUrl.startsWith("/api")) {
+      fullUrl = `${normalizedBase.replace(/\/api$/, "")}${normalizedUrl}`;
+    } else {
+      fullUrl = `${normalizedBase}${normalizedUrl}`;
+    }
+  }
 
   const response = await fetch(fullUrl, {
     ...options,
