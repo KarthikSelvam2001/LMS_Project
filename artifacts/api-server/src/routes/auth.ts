@@ -25,10 +25,13 @@ function formatUser(user: any) {
 
 function setUserCookie(res: Response, user: any) {
   const sessionData = { id: user.id || user._id };
+  const isProd = process.env.NODE_ENV === "production";
+  
   res.cookie("lms_user", JSON.stringify(sessionData), {
-    httpOnly: false,
+    httpOnly: true, // More secure
+    secure: isProd, // Must be true for sameSite: "none"
+    sameSite: isProd ? "none" : "lax", // "none" required for cross-site cookies on Render
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    sameSite: "lax",
     path: "/",
   });
   return formatUser(user);
@@ -161,7 +164,12 @@ router.post("/auth/login", async (req: Request, res: Response): Promise<void> =>
 
 // --- Logout ---
 router.post("/auth/logout", (_req: Request, res: Response): void => {
-  res.clearCookie("lms_user", { path: "/" });
+  const isProd = process.env.NODE_ENV === "production";
+  res.clearCookie("lms_user", { 
+    path: "/",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax" 
+  });
   res.json({ message: "Logged out successfully" });
 });
 
@@ -184,7 +192,12 @@ router.get("/auth/me", async (req: Request, res: Response): Promise<void> => {
 
     const user = await User.findById(cookieData.id);
     if (!user || !user.isActive || user.isDeleted) {
-      res.clearCookie("lms_user", { path: "/" });
+      const isProd = process.env.NODE_ENV === "production";
+      res.clearCookie("lms_user", { 
+        path: "/",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax"
+      });
       res.status(401).json({ message: "Session expired" });
       return;
     }

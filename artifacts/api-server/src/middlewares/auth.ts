@@ -30,7 +30,12 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
 
     const user = await User.findById(userId);
     if (!user || !user.isActive || user.isDeleted) {
-      res.clearCookie("lms_user", { path: "/" });
+      const isProd = process.env.NODE_ENV === "production";
+      res.clearCookie("lms_user", { 
+        path: "/",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax"
+      });
       return res.status(401).json({ message: "User not found or inactive" });
     }
 
