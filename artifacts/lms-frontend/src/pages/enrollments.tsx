@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { GraduationCap, Award, Eye, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { customFetch } from "@/lib/custom-fetch";
 
 export default function Enrollments() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -41,6 +42,14 @@ export default function Enrollments() {
       case "DROPPED": return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400";
       default: return "";
     }
+  };
+
+  const getAbsoluteUrl = (path: string) => {
+    const baseUrl = (window as any).__LMS_API_BASE_URL__ || "";
+    if (!path.startsWith("http") && baseUrl) {
+      return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+    }
+    return path;
   };
 
   return (
@@ -132,7 +141,7 @@ export default function Enrollments() {
                               variant="outline"
                               size="sm"
                               className="h-7 text-[10px] px-2 rounded-lg bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
-                              onClick={() => window.open(`/api/certificates/${enrollment.certificateId}/view`, "_blank")}
+                              onClick={() => window.open(getAbsoluteUrl(`/api/certificates/${enrollment.certificateId}/view`), "_blank")}
                             >
                               <Eye className="w-3 h-3 mr-1" />
                               View Certificate
@@ -141,7 +150,7 @@ export default function Enrollments() {
                               variant="outline"
                               size="sm"
                               className="h-7 text-[10px] px-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700"
-                              onClick={() => window.open(`/api/certificates/${enrollment.certificateId}/download`, "_blank")}
+                              onClick={() => window.open(getAbsoluteUrl(`/api/certificates/${enrollment.certificateId}/download`), "_blank")}
                             >
                               <Download className="w-3 h-3 mr-1" />
                               Download Certificate

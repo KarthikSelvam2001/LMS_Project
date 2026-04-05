@@ -22,7 +22,7 @@ services:
     name: lms-frontend
     plan: free
     rootDir: artifacts/lms-frontend
-    buildCommand: pnpm install && pnpm run build
+    buildCommand: pnpm install && pnpm run build && cp public/_redirects dist/public/ && cp public/404.html dist/public/
     publishDir: dist/public
     routes:
       - type: rewrite
@@ -33,4 +33,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://lms-project-be-hbhd.onrender.com/api # Correct backend URL
+        value: https://lms-project-be-hbhd.onrender.com/api
