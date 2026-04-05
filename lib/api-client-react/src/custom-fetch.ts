@@ -299,16 +299,29 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  // Prepend BASE_URL if the URL is relative
-  const baseUrl = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_PROXY_URL || "").replace(/\/$/, "");
+  // Resolve the base URL from environment variables.
+  // In development (Vite), we prefer relative paths to use the proxy.
+  // In production, we use VITE_API_URL.
+  const envBaseUrl = import.meta.env?.VITE_API_URL || "";
+  const baseUrl = envBaseUrl.replace(/\/$/, "");
+  
   let finalInput = input;
   if (typeof input === "string" && !input.startsWith("http")) {
-    finalInput = `${baseUrl}${input.startsWith("/") ? "" : "/"}${input}`;
-  } else if (isUrl(input) && !input.href.startsWith("http")) {
-     // Usually URLs are absolute, but just in case
+    const normalizedInput = input.startsWith("/") ? input : `/${input}`;
+    // Avoid double prefixing if baseUrl already ends with the start of normalizedInput
+    if (baseUrl && normalizedInput.startsWith("/api") && baseUrl.endsWith("/api")) {
+        finalInput = `${baseUrl.replace(/\/api$/, "")}${normalizedInput}`;
+    } else {
+        finalInput = `${baseUrl}${normalizedInput}`;
+    }
   }
 
-  const response = await fetch(finalInput, { ...init, method, headers });
+  const response = await fetch(finalInput, { 
+    ...init, 
+    method, 
+    headers,
+    credentials: "include" // CRITICAL: ensure cookies are sent for authentication
+  });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
