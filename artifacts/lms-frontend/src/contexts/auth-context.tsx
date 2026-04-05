@@ -33,7 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchMe = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/me`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setUser(data);
@@ -52,7 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchMe]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch("/api/auth/login", {
+    const baseUrl = import.meta.env.VITE_API_URL || "";
+    const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -69,7 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginWithGoogle = useCallback(async (token: string) => {
-    const res = await fetch("/api/auth/google", {
+    const baseUrl = import.meta.env.VITE_API_URL || "";
+    const res = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/google`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -87,7 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/logout`, { method: "POST", credentials: "include" });
     } catch {}
     setUser(null);
   }, []);
