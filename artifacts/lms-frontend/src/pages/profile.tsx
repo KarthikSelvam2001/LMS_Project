@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth, AuthUser } from "@/contexts/auth-context";
+import { customFetch } from "@/lib/custom-fetch";
 import { AppLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,16 +72,15 @@ export default function Profile() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch("/api/profile", {
+      const updatedUser = await customFetch<AuthUser>("/api/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firstName, lastName, picture }),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to update profile");
-      }
+      // Update local state to match backend response immediately
+      setFirstName(updatedUser.firstName);
+      setLastName(updatedUser.lastName);
+      setPicture(updatedUser.picture || "");
 
       await refreshUser();
       toast({ title: "Profile updated", description: "Your changes have been saved successfully." });

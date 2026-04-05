@@ -3,9 +3,10 @@ import { AppLayout } from "@/components/layout";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Download, Eye, Award, Calendar, FileText } from "lucide-react";
+import { GraduationCap, Award, Calendar, FileText, Download, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { customFetch } from "@/lib/custom-fetch";
 
 interface Certificate {
   id: string;
@@ -29,9 +30,7 @@ export default function MyCertificates() {
 
   const fetchCertificates = async () => {
     try {
-      const response = await fetch("/api/certificates/my-certificates");
-      if (!response.ok) throw new Error("Failed to fetch certificates");
-      const data = await response.json();
+      const data = await customFetch("/api/certificates/my-certificates");
       setCertificates(data);
     } catch (error) {
       console.error(error);
@@ -45,12 +44,20 @@ export default function MyCertificates() {
     }
   };
 
+  const getAbsoluteUrl = (path: string) => {
+    const baseUrl = (window as any).__LMS_API_BASE_URL__ || "";
+    if (!path.startsWith("http") && baseUrl) {
+      return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+    }
+    return path;
+  };
+
   const handleDownload = (cert: Certificate) => {
-    window.open(`/api/certificates/${cert.id}/download`, "_blank");
+    window.open(getAbsoluteUrl(`/api/certificates/${cert.id}/download`), "_blank");
   };
 
   const handleView = (cert: Certificate) => {
-    window.open(`/api/certificates/${cert.id}/view`, "_blank");
+    window.open(getAbsoluteUrl(`/api/certificates/${cert.id}/view`), "_blank");
   };
 
   return (
