@@ -1,2 +1,2 @@
-/api/*  https://lms-api-server.onrender.com/api/:splat  200
+/api/*  https://lms-project-be-hbhd.onrender.com/api/:splat  200
 /*      /index.html                                     200

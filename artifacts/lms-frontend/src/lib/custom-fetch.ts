@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "";
+const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_PROXY_URL || "";
 
 export async function customFetch<T = any>(url: string, options: RequestInit = {}): Promise<T> {
   // If the url is relative, prepend the BASE_URL
