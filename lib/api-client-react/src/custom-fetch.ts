@@ -299,7 +299,16 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  // Prepend BASE_URL if the URL is relative
+  const baseUrl = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_PROXY_URL || "").replace(/\/$/, "");
+  let finalInput = input;
+  if (typeof input === "string" && !input.startsWith("http")) {
+    finalInput = `${baseUrl}${input.startsWith("/") ? "" : "/"}${input}`;
+  } else if (isUrl(input) && !input.href.startsWith("http")) {
+     // Usually URLs are absolute, but just in case
+  }
+
+  const response = await fetch(finalInput, { ...init, method, headers });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
