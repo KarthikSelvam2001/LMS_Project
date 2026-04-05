@@ -13,10 +13,33 @@ export async function customFetch<T = any>(url: string, options: RequestInit = {
     },
   });
 
+  const contentType = response.headers.get("content-type");
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || response.statusText);
+    let errorMsg = response.statusText;
+    if (contentType && contentType.includes("application/json")) {
+      const errorData = await response.json().catch(() => ({}));
+      errorMsg = errorData.message || errorMsg;
+    } else {
+      const text = await response.text().catch(() => "");
+      console.error("Non-JSON error response:", text);
+    }
+    throw new Error(errorMsg);
   }
 
-  return response.json();
+  if (contentType && contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  if (!text) {
+    console.warn("Empty response body from:", fullUrl);
+    return {} as T;
+  }
+  
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to parse JSON response from:", fullUrl, "Content:", text.substring(0, 100));
+    throw new Error("Invalid JSON response from server");
+  }
 }
